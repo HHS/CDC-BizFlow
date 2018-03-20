@@ -6,7 +6,7 @@
 * **database** : Database scripts for BIZFLOW schema and HHS_CDC_HR schema
 * **deploy** : Deployment script, packaging script
 * **java** : Custom-developed Java module
-* ** process** : Process dedinition, user group, BizCove/View/Menu
+* **process** : Process definition, user group, BizCove/View/Menu
 * **report** : Report export
 * **ui** : UI form
 * **webapps** : Web application, including BizFlow web solution, WebMaker runtime directory
