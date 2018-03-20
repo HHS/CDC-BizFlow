@@ -16,4 +16,4 @@
 
 ### Pre-requisite:
 * JDK 1.7
-* Apace Ant 1.9.x or later
+* Apache Ant 1.9.x or later
