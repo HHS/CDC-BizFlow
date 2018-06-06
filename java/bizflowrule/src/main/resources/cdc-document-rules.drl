@@ -1,0 +1,1517 @@
+/*
+ * Copyright (C) BizFlow Corp - All Rights Reserved
+ *
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ *
+ * Written by Tae Ho Lee <thlee@bizflow.com> <Taeho.BPM@gmail.com>, 4/2018
+ *
+ */
+
+package com.bizflow.drools.document.rules;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map
+import java.util.Iterator
+import java.util.Arrays
+
+import com.bizflow.ps.drools.document.model.WorkflowDocument;
+import com.bizflow.ps.drools.document.model.WorkflowRuleSearch;
+import com.bizflow.ps.drools.document.model.WorkflowField;
+
+dialect "mvel"
+
+function void addDocument(ArrayList bizflowDocument, String documentName, boolean required) {
+    System.out.println("RULE R1>> addDocument");
+    bizflowDocument.add(new WorkflowDocument(bizflowDocument.size() + 1, documentName, bizflowDocument.size()+1, required));
+}
+
+function void addDocumentEx(ArrayList bizflowDocument, String documentName, String actName, String[] actNames, boolean required) {
+    System.out.println("RULE R1>> addDocumentEx");
+    boolean isRequiredDocument = false;
+    for (String act: actNames) {
+        System.out.println("RULE R1>> actName=" + actName + ", act=" + act);
+        if (act.equals(actName)) {
+            isRequiredDocument = required;
+            break;
+        }
+    }
+    System.out.println("RULE R1>> addDocumentEx=" + isRequiredDocument);
+    bizflowDocument.add(new WorkflowDocument(bizflowDocument.size() + 1, documentName, bizflowDocument.size()+1, isRequiredDocument));
+}
+/*
+function void addDocuments(ArrayList bizflowDocument, BizFlowProcess proc, List allDocuments) {
+    for (Object document : allDocuments) {
+        addDocument(bizflowDocument, (String)document, false);
+    }
+}
+*/
+
+/*
+Process / Activity Names as of April 13, 2018
+
+    Recruitment
+        Identify Staffing Need
+        Prepare Pre-Recruitment Documents
+        Finalize the Pre-Recruitment Checklist
+        Validate Recruitment
+        First Step of Recruitment
+
+    Classification
+        Submit PD/SOD for Classification
+        Classify PD/SOD
+        Provide Concurrence on Classification
+        Finalize Classification
+        Provide Additional Concurrence on Classification
+*/
+
+/*----------------------------------------------------------------------------------------------------
+    Recruitment Process Rules:
+----------------------------------------------------------------------------------------------------*/
+rule "Recruitment / Identify Staffing Need / *"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Identify Staffing Need",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue in ("Title 5", "Title 42", "SES/SL/ST", "")								
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R1>> " + $docSearch);
+end
+
+//------
+rule "Recruitment / Prepare Pre-Recruitment Documents / Hiring Method = Title 5"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Prepare Pre-Recruitment Documents",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R2>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Recruitment / Prepare Pre-Recruitment Documents / Hiring Method = Title 42"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Prepare Pre-Recruitment Documents",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R3>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Sensitivity Form", true);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+end
+
+rule "Recruitment / Prepare Pre-Recruitment Documents / Hiring Method = SES/SL/ST"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Prepare Pre-Recruitment Documents",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R4>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+end
+	
+rule "Recruitment / Prepare Pre-Recruitment Documents / Hiring Method = All Others"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Prepare Pre-Recruitment Documents",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue not in ("Title 5", "Title 42", "SES/SL/ST", "")
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R5>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "PD Coversheet", true);
+        addDocument($workflowDocuments, "Position Description", true);
+end
+
+//------
+rule "Recruitment / Finalize the Pre-Recruitment Checklist / Hiring Method = Title 5"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Finalize the Pre-Recruitment Checklist",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R6>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "Job Analysis (Workbook)", true);
+end
+
+rule "Recruitment / Finalize the Pre-Recruitment Checklist / Hiring Method = Title 42"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Finalize the Pre-Recruitment Checklist",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R7>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Sensitivity Form", true);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Job Analysis (Workbook)", true);
+end
+
+rule "Recruitment / Finalize the Pre-Recruitment Checklist / Hiring Method = SES/SL/ST"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Finalize the Pre-Recruitment Checklist",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R8>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Job Analysis (Workbook)", true);
+end
+
+rule "Recruitment / Finalize the Pre-Recruitment Checklist / Hiring Method = All Others"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Finalize the Pre-Recruitment Checklist",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue not in ("Title 5", "Title 42", "SES/SL/ST", "")
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R9>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "PD Coversheet", true);
+        addDocument($workflowDocuments, "Position Description", true);
+end
+
+//------
+rule "Recruitment / Validate Recruitment / Hiring Method = Title 5"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Validate Recruitment",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R10>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "Job Analysis (Workbook)", true);
+end
+
+rule "Recruitment / Validate Recruitment / Hiring Method = Title 42"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Validate Recruitment",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R11>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Sensitivity Form", true);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Job Analysis (Workbook)", true);
+end
+
+rule "Recruitment / Validate Recruitment / Hiring Method = SES/SL/ST"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Validate Recruitment",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R12>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Job Analysis (Workbook)", true);
+end
+
+rule "Recruitment / Validate Recruitment / Hiring Method = All Others"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Validate Recruitment",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue not in ("Title 5", "Title 42", "SES/SL/ST", "")
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R13>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "PD Coversheet", true);
+        addDocument($workflowDocuments, "Position Description", true);
+end
+
+//------
+rule "Recruitment / Track USA Staffing Status / Hiring Method = Title 5"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Track USA Staffing Status",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R14>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "Job Analysis (Workbook)", true);
+end
+
+rule "Recruitment / Track USA Staffing Status / Hiring Method = Title 42"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Track USA Staffing Status",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R15>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Sensitivity Form", true);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Job Analysis (Workbook)", true);
+end
+
+rule "Recruitment / Track USA Staffing Status / Hiring Method = SES/SL/ST"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Track USA Staffing Status",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R16>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Job Analysis (Workbook)", true);
+end
+
+rule "Recruitment / Track USA Staffing Status / Hiring Method = All Others"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Recruitment",
+                            actName == "Track USA Staffing Status",
+                            $actName : actName, $fields : fields
+                        )
+
+        $field      :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue not in ("Title 5", "Title 42", "SES/SL/ST", "")
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+
+    then
+        System.out.println("RULE R17>> " + $docSearch);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "PD Coversheet", true);
+        addDocument($workflowDocuments, "Position Description", true);
+end
+
+/*----------------------------------------------------------------------------------------------------
+    Classification Process Rules:
+----------------------------------------------------------------------------------------------------*/
+
+//----------
+rule "Classification / Submit PD/SOD for Classification / Rule HiringMethod=Title 5 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Submit PD/SOD for Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C1>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Submit PD/SOD for Classification / Rule HiringMethod=Title 5 and SubissionReason = Realignment"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Submit PD/SOD for Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "Realignment"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C2>> " + $docSearch);
+        addDocument($workflowDocuments, "Realignment Spreadsheet", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "Staffing List", true);
+end
+
+rule "Classification / Submit PD/SOD for Classification / Rule HiringMethod=Title 5 and SubissionReason = BUS Code Change"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Submit PD/SOD for Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "BUS Code Change"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C3>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Submit PD/SOD for Classification / Rule HiringMethod=Title 5 and SubissionReason = All Others"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Submit PD/SOD for Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue not in ("New", "Realignment", "BUS Code Change", "")
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C4>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Position Sensitivity Form", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Submit PD/SOD for Classification / Rule HiringMethod=Title 42 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Submit PD/SOD for Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C5>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Submit PD/SOD for Classification / Rule HiringMethod=SES/SL/ST and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Submit PD/SOD for Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C6>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+//----------
+rule "Classification / Classify PD/SOD / Rule HiringMethod=Title 5 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Classify PD/SOD",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C1>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Classify PD/SOD / Rule HiringMethod=Title 5 and SubissionReason = Realignment"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Classify PD/SOD",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "Realignment"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C2>> " + $docSearch);
+        addDocument($workflowDocuments, "Realignment Spreadsheet", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "Staffing List", true);
+end
+
+rule "Classification / Classify PD/SOD / Rule HiringMethod=Title 5 and SubissionReason = BUS Code Change"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Classify PD/SOD",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "BUS Code Change"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C3>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Classify PD/SOD / Rule HiringMethod=Title 5 and SubissionReason = All Others"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Classify PD/SOD",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue not in ("New", "Realignment", "BUS Code Change", "")
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C4>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Position Sensitivity Form", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Classify PD/SOD / Rule HiringMethod=Title 42 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Classify PD/SOD",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C5>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Classify PD/SOD / Rule HiringMethod=SES/SL/ST and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Classify PD/SOD",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C6>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+//----------
+rule "Classification / Provide Concurrence on Classification / Rule HiringMethod=Title 5 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C1>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Provide Concurrence on Classification / Rule HiringMethod=Title 5 and SubissionReason = Realignment"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "Realignment"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C2>> " + $docSearch);
+        addDocument($workflowDocuments, "Realignment Spreadsheet", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "Staffing List", true);
+end
+
+rule "Classification / Provide Concurrence on Classification / Rule HiringMethod=Title 5 and SubissionReason = BUS Code Change"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "BUS Code Change"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C3>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Provide Concurrence on Classification / Rule HiringMethod=Title 5 and SubissionReason = All Others"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue not in ("New", "Realignment", "BUS Code Change", "")
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C4>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Position Sensitivity Form", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Provide Concurrence on Classification / Rule HiringMethod=Title 42 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C5>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Provide Concurrence on Classification / Rule HiringMethod=SES/SL/ST and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C6>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+//----------
+rule "Classification / Provide Additional Concurrence on Classification / Rule HiringMethod=Title 5 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Additional Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C1>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Provide Additional Concurrence on Classification / Rule HiringMethod=Title 5 and SubissionReason = Realignment"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Additional Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "Realignment"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C2>> " + $docSearch);
+        addDocument($workflowDocuments, "Realignment Spreadsheet", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "Staffing List", true);
+end
+
+rule "Classification / Provide Additional Concurrence on Classification / Rule HiringMethod=Title 5 and SubissionReason = BUS Code Change"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Additional Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "BUS Code Change"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C3>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Provide Additional Concurrence on Classification / Rule HiringMethod=Title 5 and SubissionReason = All Others"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Additional Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue not in ("New", "Realignment", "BUS Code Change", "")
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C4>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Position Sensitivity Form", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Provide Additional Concurrence on Classification / Rule HiringMethod=Title 42 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Additional Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C5>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Provide Additional Concurrence on Classification / Rule HiringMethod=SES/SL/ST and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Provide Additional Concurrence on Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C6>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+//----------
+rule "Classification / Finalize Classification / Rule HiringMethod=Title 5 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Finalize Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C1>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Finalize Classification / Rule HiringMethod=Title 5 and SubissionReason = Realignment"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Finalize Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "Realignment"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C2>> " + $docSearch);
+        addDocument($workflowDocuments, "Realignment Spreadsheet", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "Staffing List", true);
+end
+
+rule "Classification / Finalize Classification / Rule HiringMethod=Title 5 and SubissionReason = BUS Code Change"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Finalize Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "BUS Code Change"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C3>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Justification", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Finalize Classification / Rule HiringMethod=Title 5 and SubissionReason = All Others"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Finalize Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue not in ("New", "Realignment", "BUS Code Change", "")
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C4>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Position Sensitivity Form", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", false);
+end
+
+rule "Classification / Finalize Classification / Rule HiringMethod=Title 42 and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Finalize Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C5>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Finalize Classification / Rule HiringMethod=SES/SL/ST and SubissionReason = New"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            actName  == "Finalize Classification",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C6>> " + $docSearch);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+//------------------------------
+// DEFAULT DOCUMENT
+//------------------------------
+rule "CDC - Classification - Empty"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC"
+                        )
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE DEFAULT>> " + $docSearch);
+        addDocument($workflowDocuments, "Other", false);
+end
+
