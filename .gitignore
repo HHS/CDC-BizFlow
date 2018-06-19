@@ -3,4 +3,5 @@ java/**/*.class
 java/**/out/**
 **/log/**
 **/logs/**
-deploy/deployment/
+deploy/deployment
+
