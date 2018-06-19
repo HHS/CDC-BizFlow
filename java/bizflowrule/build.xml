@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="bizflowrule_war" default="bizflowrule.war" basedir=".">
+
+	<property name="target.jvm" value="1.7"/>
+	<property name="target.name" value="bizflowrule" />
+	<property name="version" value="1.0.0.0"/>
+	<property name="manifest" value="MANIFEST.MF"/>
+	<property name="proj.root.dir" value="${basedir}" />
+	<property name="src.dir" value="${proj.root.dir}/src" />
+	<property name="src.resource.dir" value="${proj.root.dir}/src/main/resources" />
+
+	<property name="lib.dir" value="${proj.root.dir}/libs" />
+	<property name="lib.drools.dir" value="${lib.dir}/lib.drools.6.5"/>
+	<property name="lib.jersey.dir" value="${lib.dir}/lib.jersey.1.1"/>
+	<property name="lib.junit.dir" value="${lib.dir}/lib.junit"/>
+	<property name="lib.provided.dir" value="${lib.dir}/lib.provided"/>
+	<property name="lib.common.dir" value="${lib.dir}/lib.common"/>
+
+	<property name="build.dir" value="${proj.root.dir}/out" />
+	<property name="classes.dir" value="${build.dir}/classes" />
+	<property name="dist.dir" value="${proj.root.dir}/out" />
+	<property name="web.dir" value="${proj.root.dir}/out/web" />
+	<property name="docs.dir" value="${proj.root.dir}/out/doc" />
+	<property name="artifacts.dir" value="${proj.root.dir}/out/artifacts" />
+
+
+	<path id="classpath">
+		<fileset dir="${lib.drools.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${lib.jersey.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${lib.junit.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${lib.common.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${lib.provided.dir}">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+
+
+	<!-- Deletes the existing build, docs and dist directory-->
+	<target name="clean"
+			depends="init"
+			description="cleans generated directories and files">
+		<delete dir="${docs.dir}" />
+		<delete dir="${classes.dir}" />
+		<delete dir="${dist.dir}" />
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="init">
+		<tstamp>
+			<format property="curtime" pattern="yyyy-MM-dd HH:mm:ss" />
+		</tstamp>
+		<echo message="Start time          = ${curtime}" />
+		<echo message="target.jvm          = ${target.jvm}" />
+		<echo message="target.name         = ${target.name}" />
+		<echo message="proj.root.dir       = ${proj.root.dir}" />
+		<echo message="src.dir             = ${src.dir}" />
+		<echo message="lib.dir             = ${lib.dir}" />
+		<echo message="build.dir           = ${build.dir}" />
+		<echo message="classes.dir         = ${classes.dir}" />
+		<echo message="dist.dir            = ${dist.dir}" />
+	</target>
+
+
+	<!-- Compiles the java code (including the usage of library for JUnit -->
+	<target name="compile"
+			depends="init, clean"
+			description="compiles java source files">
+		<delete dir="${classes.dir}" />
+		<mkdir dir="${classes.dir}" />
+		<javac destdir="${classes.dir}"
+				debug="on"
+				source="${target.jvm}" target="${target.jvm}"
+				deprecation="off" optimize="on" encoding="utf-8">
+			<classpath refid="classpath"/>
+			<src path="${src.dir}"/>
+		</javac>
+	</target>
+
+    <!-- Creates Javadoc -->
+    <target name="docs" depends="compile">
+        <javadoc packagenames="src" sourcepath="${src.dir}" destdir="${docs.dir}">
+            <!-- Define which files / directory should get included, we include all -->
+             <fileset dir="${src.dir}">
+                <include name="**/*.java" />
+             </fileset>
+        </javadoc>
+    </target>
+
+	<target name="bizflowrule.jar"
+			depends="compile"
+			description="creates jar file from class files">
+		<echo message="Building ${target.name}.jar file. "/>
+		<delete file="${manifest}"/>
+		<echo file="${manifest}" append="false" message="Manifest-Version: ${version}&#13;&#10;Created-By: BizFlow Corp"/>
+		<delete dir="${dist.dir}/lib"/>
+		<copy todir="${dist.dir}/lib">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		<jar jarfile="${dist.dir}/lib/${target.name}.jar" basedir="${classes.dir}" includes="com/**" manifest="${manifest}"/>
+		<copy file="${dist.dir}/lib/${target.name}.jar" toDir="${dist.dir}"/>
+		<delete file="${manifest}"/>
+	</target>
+
+
+
+	<target name="bizflowrule.exploded" depends="bizflowrule.jar" description="Build &#39;bizflowrule:war exploded&#39; artifact">
+    	<echo message="Building ${target.name}.jar file. "/>
+		
+		<mkdir dir="${web.dir}"/>
+		<copy todir="${web.dir}">
+			<fileset dir="${basedir}/web"/>
+		</copy>
+
+		<!-- Copy xml and propertie files from resources to WEB-INF directory //-->
+    	<mkdir dir="${web.dir}/WEB-INF" />
+    	<copy todir="${web.dir}/WEB-INF">
+			<fileset dir="${src.resource.dir}" >
+			    <include name="**/*.xml" />
+			    <include name="**/*.properties" />
+			</fileset> 
+			<fileset dir="${proj.root.dir}/WEB-INF" >
+			    <include name="**/*.xml" />
+			    <include name="**/*.properties" />
+			</fileset> 
+    	</copy>
+
+
+		<!-- Copy jar files from lib to WEB-INF/lib directory //-->
+    	<mkdir dir="${web.dir}/WEB-INF/lib"/>
+		<copy todir="${web.dir}/WEB-INF/lib">
+			<fileset dir="${lib.drools.dir}">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${lib.jersey.dir}">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${lib.junit.dir}">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${lib.common.dir}">
+				<include name="*.jar"/>
+			</fileset>
+		</copy>
+
+		<!-- copy bizflowrule.jar //-->
+		<copy file="${build.dir}/bizflowrule.jar" todir="${web.dir}/WEB-INF/lib"/>
+
+		<!-- Copy drl files from classes to WEB-INF/classes directory //-->
+		<mkdir dir="${web.dir}/WEB-INF/classes"/>
+		<copy todir="${web.dir}/WEB-INF/classes">
+			<fileset dir="${src.resource.dir}" >
+			    <include name="**/*.drl"/>
+			</fileset>
+		</copy>
+	</target>
+
+
+	<target name="bizflowrule.war" depends="bizflowrule.exploded">
+		<war destfile="out/bizflowrule.war" webxml="${web.dir}/WEB-INF/web.xml">
+			<fileset dir="${web.dir}"/>
+			<lib dir="${web.dir}/WEB-INF/lib"/>
+			<classes dir="${web.dir}/WEB-INF/classes"/>
+		</war>
+	</target>
+
+</project>

@@ -1,0 +1,20 @@
+----------------------------------------------------------------
+Thu Apr 12 16:18:15 EDT 2018:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.12.1.1 - (1704137): instance a816c00e-0162-bb82-34c6-0000295d24f0 
+on database directory memory:/Users/taeho/OneDrive/OneDrive - BizFlow/workspace/taeho.bpm.github/bizflowrule/testdb with class loader WebappClassLoader
+  context: 
+  delegate: false
+  repositories:
+    /WEB-INF/classes/
+----------> Parent Classloader:
+java.net.URLClassLoader@593be416
+ 
+Loaded from file:/Users/taeho/server/apache-tomcat-7.0.84/webapps/ROOT/WEB-INF/lib/derby-10.12.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.7.0_80-b15
+user.dir=/Users/taeho/OneDrive/OneDrive - BizFlow/workspace/taeho.bpm.github/bizflowrule
+os.name=Mac OS X
+os.arch=x86_64
+os.version=10.13.3
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
