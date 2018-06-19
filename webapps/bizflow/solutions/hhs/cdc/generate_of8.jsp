@@ -148,6 +148,7 @@
 	String series = null;
 	String gradeItems[] = grades.split("::");
 	String gradetextItems[] = gradetexts.split("::");
+	boolean initialDocumentExist = false;
 
 	try {
 		// Configuring application
@@ -167,7 +168,9 @@
 		useSSL = "https".equalsIgnoreCase(reportProtocol);
 
 		if (positiontitleseries != null) {
-			String[] concatinatedPositionTitleSeries = positiontitleseries.split("%%");
+			System.out.println("positiontitleseries=" + positiontitleseries);
+			String[] concatinatedPositionTitleSeries = positiontitleseries.split("::");
+			concatinatedPositionTitleSeries = concatinatedPositionTitleSeries[0].split("%%");
 			if (concatinatedPositionTitleSeries.length > 0)	{
 				positiontitle = concatinatedPositionTitleSeries[0];
 			}
@@ -176,14 +179,17 @@
 			}
 		}
 
-System.out.println("\n\n\n\n");
-System.out.println("admincode=" + admincode);
-System.out.println("positiontitle=" + positiontitle);
-System.out.println("payplan=" + payplan);
-System.out.println("series=" + series);
-System.out.println("pdnumber=" + pdnumber);
-System.out.println("supervisorname=" + supervisorname);
-System.out.println("grades=" + grades);
+System.out.println("\n\n");
+System.out.println("\tgenerationmode=" + generationmode);
+System.out.println("\tadmincode=" + admincode);
+System.out.println("\tpositiontitle=" + positiontitle);
+System.out.println("\tpayplan=" + payplan);
+System.out.println("\tseries=" + series);
+System.out.println("\tpdnumber=" + pdnumber);
+System.out.println("\tsupervisorname=" + supervisorname);
+System.out.println("\tgrades=" + grades);
+System.out.println("\tgradetexts=" + gradetexts);
+System.out.println("\n\n");
 
 		// Validating status of the process instance
 		XMLResultSet xrsProcess = getProcess(hwSession, hwSessionInfo, nProcessId);
@@ -223,35 +229,31 @@ System.out.println("grades=" + grades);
 			String jMemberID = loginUser.getFieldValueAt(0, "ID");
 			String jUserName = loginUser.getFieldValueAt(0, "LOGINID");
 
-			// 
-			String fileNames[] = new String[gradetextItems.length];
-			File worksheetFiles[] = new File[gradetextItems.length];
-			for (int i=0; i<gradetextItems.length; i++) {
-				worksheetFiles[i] = downloadWorksheet(useSSL, request, reportServerURL, reportPath, fileFormat, jMemberID, jUserName, nProcessId, gradetextItems[i]);
-				System.out.println(worksheetFiles[i].getAbsolutePath());
-				fileNames[i] = admincode + "-OF8-" + gradetextItems[i] + "-" + pdnumber + ".pdf";
-				//fileNames[i] = admincode + "-OF8-" + positiontitle + "-" + payplan + "-" + series + "-" + gradetextItems[i] + "-" + pdnumber + "-" + supervisorname + ".pdf";
-				System.out.println(fileNames[i]);
-			}
-
 			// get existing attachments of the current process.
 			xrsAttachments = getAttachments(hwSession, hwSessionInfo, nProcessId);
 			System.out.println("xrsAttachments.getRowCount()=" + xrsAttachments.getRowCount());
-			//System.out.println(xrsAttachments.toString());
-			if ("initial".equalsIgnoreCase(generationmode)) {
-				//create a brand new OF-8 file
 
-			} 
-			else
-			{
-				for (int i = xrsAttachments.getRowCount() - 1; i >= 0; i--) {
-					if (documentType.equalsIgnoreCase(xrsAttachments.getFieldValueAt(i, "CATEGORY")) 
-						&& !"INITIAL".equalsIgnoreCase(xrsAttachments.getFieldValueAt(i, "ETCINFO"))
-						&& !"".equalsIgnoreCase(xrsAttachments.getFieldValueAt(i, "ETCINFO"))) {
-		                System.out.println("deleting an existing file [" + Integer.toString(i) + "] " + xrsAttachments.getFieldValueAt(i, "FILENAME"));
-		                xrsAttachments.remove(i);
-					}
+			// find files to be deleted.
+			boolean bFilesToBeRemoved = false;
+			for (int i = xrsAttachments.getRowCount() - 1; i >= 0; i--) {
+				if (documentType.equalsIgnoreCase(xrsAttachments.getFieldValueAt(i, "CATEGORY")) 
+					&& !"INITIAL-OF8".equalsIgnoreCase(xrsAttachments.getFieldValueAt(i, "ETCINFO"))
+					&& !"".equalsIgnoreCase(xrsAttachments.getFieldValueAt(i, "ETCINFO"))) {
+	                
+	                System.out.println("deleting an existing file [" + Integer.toString(i) + "] " + xrsAttachments.getFieldValueAt(i, "FILENAME"));
+	                xrsAttachments.remove(i);
+	                bFilesToBeRemoved = true;
 				}
+
+				if (documentType.equalsIgnoreCase(xrsAttachments.getFieldValueAt(i, "CATEGORY"))
+					&& "INITIAL-OF8".equalsIgnoreCase(xrsAttachments.getFieldValueAt(i, "ETCINFO"))) {
+					initialDocumentExist = true;
+				}
+			}
+
+			// delete files.
+			if (bFilesToBeRemoved) {
+				System.out.println("initialDocumentExist=" + initialDocumentExist);
 				xrsAttachments.setFilter(XMLResultSet.FILTER_DELETED);
 				hwSession.updateAttachments(hwSessionInfo.toString(),
 											hwSessionInfo.get("SERVERID"),
@@ -259,6 +261,47 @@ System.out.println("grades=" + grades);
 											0,
 											xrsAttachments.toByteArray(),
 											null);
+			}
+
+			boolean bFilesToBeUpdated = false;
+
+			if ("initial".equalsIgnoreCase(generationmode) 
+				&& initialDocumentExist) {
+				bFilesToBeUpdated = false; //The initial file should not be updated once it had been created at the first step of Classificaiton process.
+ 			} else {
+				bFilesToBeUpdated = true;
+			}
+
+			File worksheetFiles[] = null;
+			String fileNames[] = null;
+
+			if (bFilesToBeUpdated) {
+				int fileLength = 1;
+				if (!"initial".equalsIgnoreCase(generationmode)) {
+					fileLength = gradetextItems.length;
+				}
+
+				worksheetFiles = new File[fileLength];
+				fileNames = new String[fileLength];
+				//OF-8 file per Grade level except initial file. Initial file is per Classification level.
+				if ("initial".equalsIgnoreCase(generationmode)) {
+					for (int i=0; i<gradetextItems.length; i++) {
+						worksheetFiles[i] = downloadWorksheet(useSSL, request, reportServerURL, reportPath, fileFormat, jMemberID, jUserName, nProcessId, gradetextItems[i]);					
+						fileNames[i] = admincode + "-OF8-" + positiontitle + "-" + payplan + "-" + series + "-" + gradetexts.replace("::", ",") + "-" + pdnumber + ".pdf";
+						fileNames[i] = fileNames[i].replaceAll("[^a-zA-Z0-9 \\.\\-]", "_"); //replace illegal character in file name
+						System.out.println(worksheetFiles[i].getAbsolutePath());
+						System.out.println(fileNames[i]);
+						break; //only one file. not per grade TODO: change downloadWorksheet to call different URL.
+					}	
+				} else {
+					for (int i=0; i<gradetextItems.length; i++) {
+						worksheetFiles[i] = downloadWorksheet(useSSL, request, reportServerURL, reportPath, fileFormat, jMemberID, jUserName, nProcessId, gradetextItems[i]);
+						System.out.println(worksheetFiles[i].getAbsolutePath());
+						fileNames[i] = admincode + "-OF8-" + positiontitle + "-" + payplan + "-" + series + "-" + gradetextItems[i] + "-" + pdnumber + ".pdf";
+						fileNames[i] = fileNames[i].replaceAll("[^a-zA-Z0-9 \\.\\-]", "_"); //replace illegal character in file name
+						System.out.println(fileNames[i]);
+					}
+				}
 
 				// Attach to process
 				xrsAttachments = new XMLResultSetImpl();
@@ -278,23 +321,23 @@ System.out.println("grades=" + grades);
 					xrsAttachments.setFieldValueAt(r, "MAPID", String.valueOf(r));
 					xrsAttachments.setFieldValueAt(r, "DMDOCRTYPE", "N");
 					if ("initial".equalsIgnoreCase(generationmode)) {
-						xrsAttachments.setFieldValueAt(r, "ETCINFO", "AUTO-INITIAL");
-						xrsAttachments.setFieldValueAt(r, "DESCRIPTION", "Initial / " + admincode + " / " + gradetextItems[i] + " / " + pdnumber);
+						xrsAttachments.setFieldValueAt(r, "ETCINFO", "INITIAL-OF8");
+						xrsAttachments.setFieldValueAt(r, "DESCRIPTION", "Initial | Admin Code=" + admincode + " | Grade=" + gradetexts.replace("::", ",") + " | Pd Number=" + pdnumber);
 						xrsAttachments.setFieldValueAt(r, "DISPLAYNAME", fileNames[i]);
 						xrsAttachments.setFieldValueAt(r, "FILENAME", "INITIAL-" + fileNames[i]);
 					} else if ("manual".equalsIgnoreCase(generationmode)) {
-						xrsAttachments.setFieldValueAt(r, "ETCINFO", "AUTO-USER");
-						xrsAttachments.setFieldValueAt(r, "DESCRIPTION", "Manual / " + admincode + " / " + gradetextItems[i] + " / " + pdnumber);
+						xrsAttachments.setFieldValueAt(r, "ETCINFO", "MANUAL-OF8");
+						xrsAttachments.setFieldValueAt(r, "DESCRIPTION", "Manual | Admin Code=" + admincode + " | Grade=" + gradetextItems[i] + " | Pd Number=" + pdnumber);
 						xrsAttachments.setFieldValueAt(r, "DISPLAYNAME", fileNames[i]);
 						xrsAttachments.setFieldValueAt(r, "FILENAME", fileNames[i]);
 					} else if ("auto".equalsIgnoreCase(generationmode)) {
-						xrsAttachments.setFieldValueAt(r, "ETCINFO", "AUTO-SYSTEM");
-						xrsAttachments.setFieldValueAt(r, "DESCRIPTION", "Auto / " + admincode + " / " + gradetextItems[i] + " / " + pdnumber);
+						xrsAttachments.setFieldValueAt(r, "ETCINFO", "AUTO-OF8");
+						xrsAttachments.setFieldValueAt(r, "DESCRIPTION", "Auto | Admin Code=" + admincode + " | Grade=" + gradetextItems[i] + " | Pd Number=" + pdnumber);
 						xrsAttachments.setFieldValueAt(r, "DISPLAYNAME", fileNames[i]);
 						xrsAttachments.setFieldValueAt(r, "FILENAME", fileNames[i]);
 					} else {
-						xrsAttachments.setFieldValueAt(r, "ETCINFO", "AUTO-SYSTEM");
-						xrsAttachments.setFieldValueAt(r, "DESCRIPTION", "Auto / " + admincode + " / " + gradetextItems[i] + " / " + pdnumber);
+						xrsAttachments.setFieldValueAt(r, "ETCINFO", "AUTO-OF8");
+						xrsAttachments.setFieldValueAt(r, "DESCRIPTION", "Auto | Admin Code=" + admincode + " | Grade=" + gradetextItems[i] + " | Pd Number=" + pdnumber);
 						xrsAttachments.setFieldValueAt(r, "DISPLAYNAME", fileNames[i]);
 						xrsAttachments.setFieldValueAt(r, "FILENAME", fileNames[i]);
 					}											
@@ -307,121 +350,16 @@ System.out.println("grades=" + grades);
 						nProcessId,
 						nActivityId,
 						xrsAttachments.toByteArray(),
-						attachFiles);
+						attachFiles);			
 
-				if ("manual".equalsIgnoreCase(generationmode)) {
-				//delete existing OF-8 files except the first system generated file and files which user manually uploads from local hard drive.
-
-				} else if ("auto".equalsIgnoreCase(generationmode)) {
-				//delete existing OF-8 files except the first system generated file and files which user manually uploads from local hard drive.
-				}
-			}
-
-
-
-			/*
-			File worksheetFile = downloadWorksheet(useSSL, request, reportServerURL, reportPath, fileFormat, jMemberID, jUserName, nProcessId);
-
-			if (worksheetFile != null && 0<worksheetFile.length()) {
-
-				if ("append".equalsIgnoreCase(attachmode)) {
-					System.out.println("[PDF GENERATION] append");
-					// Attach to process
-					xrsAttachments = new XMLResultSetImpl();
-					xrsAttachments.createResultSet("HWAttachments", "HWATTACHMENT");
-					int r = xrsAttachments.add();
-					xrsAttachments.setFieldValueAt(r, "SERVERID", hwSessionInfo.getServerID());
-					xrsAttachments.setFieldValueAt(r, "PROCESSID", processid);
-					xrsAttachments.setFieldValueAt(r, "ACTIVITYSEQUENCE", activityid);
-					xrsAttachments.setFieldValueAt(r, "ID", String.valueOf(r));
-					xrsAttachments.setFieldValueAt(r, "WORKITEMSEQUENCE", workitemseq);
-					xrsAttachments.setFieldValueAt(r, "TYPE", "G");
-					xrsAttachments.setFieldValueAt(r, "OUTTYPE", "B");
-					xrsAttachments.setFieldValueAt(r, "INTYPE", "C");
-					xrsAttachments.setFieldValueAt(r, "DIGITALSIGNATURE", "N");
-					xrsAttachments.setFieldValueAt(r, "MAPID", String.valueOf(r));
-					xrsAttachments.setFieldValueAt(r, "DMDOCRTYPE", "N");
-					xrsAttachments.setFieldValueAt(r, "CATEGORY", documentType);
-					xrsAttachments.setFieldValueAt(r, "DISPLAYNAME", fileName);
-					xrsAttachments.setFieldValueAt(r, "FILENAME", fileName);
-					xrsAttachments.setFieldValueAt(r, "SIZE", String.valueOf(worksheetFile.length()));
-
-					String[] attachFiles = {worksheetFile.getPath()};
-					hwSession.updateAttachments(hwSessionInfo.toString(),
-							hwSessionInfo.getServerID(),
-							nProcessId,
-							nActivityId,
-							xrsAttachments.toByteArray(),
-							attachFiles);
-				} 
-				else 
-				{
-					System.out.println("[PDF GENERATION] replace");
-
-					int idx = -1;
-					if (xrsAttachments != null) {
-						System.out.println("[PDF GENERATION] replace-1");
-						String fc = null;
-						for (int i=xrsAttachments.getRowCount()-1; i>=0; i--) {
-							System.out.println("[PDF GENERATION] replace-2");
-						    fc = xrsAttachments.getFieldValueAt(i, "CATEGORY");
-						    System.out.println("[PDF GENERATION] i=" + i + ", fc=" + fc);
-						    if ("OF-8".equals(fc)) {
-						        idx = i;
-						        break;
-							}
-						}
+				// delete temporary files
+				for (int i=0; i<worksheetFiles.length; i++) {
+					try {
+						System.out.println("deleting temporary file " + worksheetFiles[i].getAbsolutePath());
+						//worksheetFiles[i].delete();
+					} catch (Exception e) {
+						System.out.println(e.toString());
 					}
-
-					//no same document type attached
-					if (idx == -1) {
-						System.out.println("[PDF GENERATION] no existing document found, adding a new one.");
-						xrsAttachments = new XMLResultSetImpl();
-						xrsAttachments.createResultSet("HWAttachments", "HWATTACHMENT");
-						int r = xrsAttachments.add();
-						xrsAttachments.setFieldValueAt(r, "SERVERID", hwSessionInfo.getServerID());
-						xrsAttachments.setFieldValueAt(r, "PROCESSID", processid);
-						xrsAttachments.setFieldValueAt(r, "ACTIVITYSEQUENCE", activityid);
-						xrsAttachments.setFieldValueAt(r, "ID", String.valueOf(r));
-						xrsAttachments.setFieldValueAt(r, "WORKITEMSEQUENCE", workitemseq);
-						xrsAttachments.setFieldValueAt(r, "TYPE", "G");
-						xrsAttachments.setFieldValueAt(r, "OUTTYPE", "B");
-						xrsAttachments.setFieldValueAt(r, "INTYPE", "C");
-						xrsAttachments.setFieldValueAt(r, "DIGITALSIGNATURE", "N");
-						xrsAttachments.setFieldValueAt(r, "MAPID", String.valueOf(r));
-						xrsAttachments.setFieldValueAt(r, "DMDOCRTYPE", "N");
-						xrsAttachments.setFieldValueAt(r, "CATEGORY", documentType);
-						xrsAttachments.setFieldValueAt(r, "DISPLAYNAME", fileName);
-						xrsAttachments.setFieldValueAt(r, "FILENAME", fileName);
-						xrsAttachments.setFieldValueAt(r, "SIZE", String.valueOf(worksheetFile.length()));						
-					} else {
-						System.out.println("[PDF GENERATION] existing document found.");
-						xrsAttachments.setFieldValueAt(idx, "SIZE", String.valueOf(worksheetFile.length()));
-					}
-
-					String[] attachFiles = {worksheetFile.getPath()};
-					hwSession.updateAttachments(hwSessionInfo.toString(),
-							hwSessionInfo.getServerID(),
-							nProcessId,
-							nActivityId,
-							xrsAttachments.toByteArray(),
-							attachFiles);					
-					
-				}
-
-				worksheetFile.delete();
-				
-			} else {
-				errorMsg = "[Internal Error] Cannot create a document.";
-			}
-			*/
-
-			for (int i=0; i<worksheetFiles.length; i++) {
-				try {
-					System.out.println("deleting cache file " + worksheetFiles[i].getAbsolutePath());
-					//worksheetFiles[i].delete();
-				} catch (Exception e) {
-					System.out.println(e.toString());
 				}
 			}
 

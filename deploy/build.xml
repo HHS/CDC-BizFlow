@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="CaptureWMRuntime" default="package.ui" basedir=".">
 
-	
 	<property file="ui.properties" />
 
 	<property name="proj.root.dir" value="${basedir}" />
-	<property name="webserver.dir" value="C:\Program Files\Apache Software Foundation\Tomcat 7.0" />
-	<property name="src.web.bizflow.dir" value="${webserver.dir}/webapps/bizflow" />
-	<property name="src.wmruntime.dir" value="${webserver.dir}/webapps/bizflowwebmaker" />
+	<property name="webserver.dir" value="C:\Program Files\Apache Software Foundation" />
+	<property name="src.web.bizflow.dir" value="${webserver.dir}/Tomcat 7.0_BizFlow/webapps/bizflow" />
+	<property name="src.wmruntime.dir" value="${webserver.dir}/Tomcat 7.0_BizFlowWM/webapps/bizflowwebmaker" />
 	<property name="deploy.dir" value="${proj.root.dir}/deployment" />
 	<property name="deploy.runtime.dir" value="${deploy.dir}/ui/runtime" />
 	<property name="deploy.conf.dir" value="${deploy.runtime.dir}/configuration" />
 	<property name="deploy.webapps.dir" value="${deploy.runtime.dir}/webapps" />
-	<property name="token.bf.base.url" value="http://cms.bizflow.com" />
+	<property name="token.bf.base.url" value="http://cdc.bizflow.com" />
 	<property name="replace.bf.url.dev" value="http://localhost:8080" />
 	<property name="replace.bf.url.qa" value="http://localhost:9080" />
 	<property name="replace.bf.url.trn" value="http://localhost:8080" />
@@ -23,11 +22,22 @@
 
 	<!-- patters for WebMaker runtime files to be captured, excluding config files -->
 	<patternset id="wm.proj.include.noconf">
-		<include name="cmscommon/**" />
-		<include name="StratConMain/**" />
-		<include name="StratCon_AUT/**" />
-		<include name="classification_main/**" />
-		<include name="eligqual/**" />
+		<include name="apt_main/**" />
+		<include name="cdc_api/**" />
+		<include name="cla_classification/**" />
+		<include name="cla_concurrence/**" />
+		<include name="cla_general/**" />
+		<include name="cla_main/**" />
+		<include name="cla_position/**" />
+		<include name="cla_resources/**" />
+		<include name="p2w_common/**" />
+		<include name="p2w_conditions/**" />
+		<include name="p2w_general/**" />
+		<include name="p2w_main/**" />
+		<include name="p2w_position/**" />
+		<include name="p2w_resources/**" />
+		<include name="p2w_vacancy/**" />
+		<include name="p2w_validation/**" />
 
 		<exclude name="**/morphyc.xml" />
 		<exclude name="**/*log.txt" />
@@ -36,11 +46,22 @@
 
 	<!-- patters for WebMaker runtime config files to be captured -->
 	<patternset id="wm.proj.include.conf">
-		<include name="cmscommon/doc/morphyc.xml" />
-		<include name="StratConMain/doc/morphyc.xml" />
-		<include name="StratCon_AUT/doc/morphyc.xml" />
-		<include name="classification_main/doc/morphyc.xml" />
-		<include name="eligqual/doc/morphyc.xml" />
+		<include name="apt_main/doc/morphyc.xml" />
+		<include name="cdc_api/doc/morphyc.xml" />
+		<include name="cla_classification/doc/morphyc.xml" />
+		<include name="cla_concurrence/doc/morphyc.xml" />
+		<include name="cla_general/doc/morphyc.xml" />
+		<include name="cla_main/doc/morphyc.xml" />
+		<include name="cla_position/doc/morphyc.xml" />
+		<include name="cla_resources/doc/morphyc.xml" />
+		<include name="p2w_common/doc/morphyc.xml" />
+		<include name="p2w_conditions/doc/morphyc.xml" />
+		<include name="p2w_general/doc/morphyc.xml" />
+		<include name="p2w_main/doc/morphyc.xml" />
+		<include name="p2w_position/doc/morphyc.xml" />
+		<include name="p2w_resources/doc/morphyc.xml" />
+		<include name="p2w_vacancy/doc/morphyc.xml" />
+		<include name="p2w_validation/doc/morphyc.xml" />
 	</patternset>
 
 	<!-- patters for web application files for blastcache -->
@@ -48,12 +69,10 @@
 		<include name="**/views/view/Page_Painter/BizFlowEntry.xsl" />
 		<include name="**/views/view/Page_Painter/NewForm.xsl" />
 		<include name="**/views/view/Page_Painter/SaveTabContentsForm.xsl" />
-		<include name="classification_main/doc/morphyc.xml" />
-		<include name="eligqual/doc/morphyc.xml" />
+		<include name="apt_main/doc/morphyc.xml" />
+		<include name="cla_main/doc/morphyc.xml" />
+		<include name="p2w_main/doc/morphyc.xml" />
 	</patternset>
-
-
-
 
 	<target name="init">
 		<tstamp>
@@ -70,7 +89,6 @@
 		<echo message="token.bf.base.url   = ${token.bf.base.url}" />
 		<echo message="blastcache.set      = ${blastcache.set}" />
 	</target>
-
 
 	<target name="package.ui"
 			depends="init"
@@ -169,28 +187,11 @@
 		<delete dir="${deploy.webapps.dir}/bizflowwebmaker/WEB-INF" />
 		<copy todir="${deploy.webapps.dir}/bizflowwebmaker/WEB-INF">
 			<fileset dir="${src.wmruntime.dir}/WEB-INF">
-				<include name="classes/HWSessionFactory.properties" />
-				<include name="classes/log4j.properties" />
-				<include name="lib/activation-1.1.jar" />
-				<include name="lib/bcmail-jdk15on-1.54.jar" />
-				<include name="lib/bcpkix-jdk15on-1.54.jar" />
-				<include name="lib/bcprov-jdk15on-1.54.jar" />
-				<include name="lib/cmspdf.jar" />
-				<include name="lib/commons-collections-3.2.1-LICENSE.txt" />
-				<include name="lib/commons-collections-3.2.1.jar" />
-				<include name="lib/commons-logging-1.2.jar" />
-				<include name="lib/fontbox-2.0.4.jar" />
-				<include name="lib/hsfrmwk.jar" />
-				<include name="lib/hwjo.jar" />
-				<include name="lib/hwjsp.jar" />
-				<include name="lib/mail-1.4.jar" />
-				<include name="lib/pdfbox-2.0.4.jar" />
-				<include name="lib/pdfbox-app-2.0.4-sources.jar" />
-				<include name="lib/pdfbox-app-2.0.4.jar" />
-				<include name="lib/pdfbox-debugger-2.0.4.jar" />
-				<include name="lib/pdfbox-tools-2.0.4.jar" />
-				<include name="lib/rijndael-api.jar" />
-				<include name="PDF_Configuration/**" />
+				<!--include name="classes/HWSessionFactory.properties" /-->
+				<!--include name="classes/log4j.properties" /-->
+				<!--include name="lib/hwjo.jar" /-->
+				<!--include name="lib/hwjsp.jar" /-->
+				<!--include name="PDF_Configuration/**" /-->
 			</fileset>
 		</copy>
 	</target>
@@ -203,11 +204,7 @@
 		<delete dir="${deploy.webapps.dir}/bizflow" />
 		<copy todir="${deploy.webapps.dir}/bizflow">
 			<fileset dir="${src.web.bizflow.dir}">
-				<include name="bizindex.jsp" />
-				<include name="bizindex.org.before.disclaimer.jsp" />
-				<include name="bizindex.org.after.disclaimer.jsp" />
-				<include name="solutions/disclaimer/**" />
-				<include name="solutions/cms/**" />
+				<include name="solutions/hhs/cdc/**" />
 			</fileset>
 		</copy>
 	</target>
@@ -221,7 +218,7 @@
 		<tstamp>
 			<format property="blockcachesfx2" pattern="yyyyMMddHHmmss" />
 		</tstamp>
-		<replace dir="${deploy.webapps.dir}/bizflow/solutions/cms"
+		<replace dir="${deploy.webapps.dir}/bizflow/solutions/hhs/cdc"
 			includes="index.jsp">
 			<replacefilter token=".css" value=".css?rev=${blockcachesfx2}" />
 			<replacefilter token=".js" value=".js?rev=${blockcachesfx2}" />
@@ -235,7 +232,7 @@
 		<tstamp>
 			<format property="ziptime" pattern="yyyyMMdd_HHmmss" />
 		</tstamp>
-		<zip destfile="${deploy.runtime.dir}/../runtime_${ziptime}.zip"
+		<zip destfile="${deploy.runtime.dir}/../cdc_runtime_${ziptime}.zip"
 				basedir="${deploy.runtime.dir}/.."
 				includes="runtime/**" />
 	</target>
