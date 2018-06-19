@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="CaptureWMRuntime" default="package.ui" basedir=".">
 
+	<!-- configuration file to overwrite properties below /-->
 	<property file="ui.properties" />
 
 	<property name="proj.root.dir" value="${basedir}" />
