@@ -26,7 +26,6 @@
 <bf:parameter id="pdnumber" name="pdnumber" value="" valuePattern="NoRiskyValue"/>
 <bf:parameter id="supervisorname" name="supervisorname" value="" valuePattern="NoRiskyValue"/>
 
-<!-- TODO: Implement SSL //-->
 <%@ include file="./sslinit.jsp" %>
 <%!
 	static final String DEFAULT_DOCUMENT_TYPE = "OF-8";
