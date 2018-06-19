@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------------------
---  Name	            : 	5_grant_cdc_hr.sql
+--  Name	            : 	6_grant_cdc_hr.sql
 --	Author				:	Taeho Lee <thee@bizflow.com>
 --	Copyright			:	BizFlow Corp.	
 --	

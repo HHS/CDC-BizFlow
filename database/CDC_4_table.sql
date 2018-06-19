@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------------------
---  Name	            : 	3_table.sql
+--  Name	            : 	4_table.sql
 --	Author				:	Taeho Lee <thee@bizflow.com>
 --	Copyright			:	BizFlow Corp.	
 --	
