@@ -5,6 +5,7 @@ Update History:
 ***Updated by Taeho Lee on June 19, 2018*** - build instruction
 ----------
 
+
 ## 1. System Components
 Source Repository: *https://github.com/HHS/CDC-BizFlow* This repository includes directories below.
 
@@ -73,7 +74,7 @@ Source Repository: *https://github.com/HHS/CDC-BizFlow* This repository includes
 
 
 
-## UI Module Packaging Instruction
+## 3. UI Module Packaging Instruction
 UI modules are captured from DEV environment's web application directory, using ANT build file.
 
 The ANT build file will package the UI modules in a zip file. Especially for WebMaker runtime files, the script will capture configuration files separately per environment, which will be deployed to the target environment appropriately by the deployment script later on. The script also appends timestamp to the JavaScript and CSS file references in the web application files so that the web browser cache is forced to be refreshed at the first time loading after the new deployment.
@@ -131,7 +132,7 @@ The ANT build file will package the UI modules in a zip file. Especially for Web
     ```
 
 
-## UI Module Deployment Instruction
+## 4. UI Module Deployment Instruction
 
 UI modules are deployed to the higher environments (e.g. QA, PROD) using shell scripts.
 
