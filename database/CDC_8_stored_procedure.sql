@@ -1,5 +1,5 @@
 --------------------------------------------------------
---  File created - Monday-June-18-2018   
+--  File created - Thursday-June-21-2018   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Procedure SP_CLEAN_FORM_RECORDS
@@ -110,6 +110,7 @@ set define off;
     -- 	04/20/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'POS_ORG_TITLE' with 'POS_FUNCTIONAL_TITLE'
     -- 	05/03/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'JOB_REC_POS_NUM' with 'POS_JOB_REQ_NUM'
     -- 	05/03/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'PRE_EMPLOYMENT_PHYSICAL_REQUIRED' with 'PRE_EMP_PHYSICAL_REQUIRED'    
+    -- 	06/19/2018	SGURUNG		Added code to have the Appointment WF use PROCID from its parent WF as its Parent Process ID
     ------------------------------------------------------------------------------------------
 
 IS
@@ -130,6 +131,7 @@ IS
 
     V_NEW_FIELD_DATA XMLTYPE;
     V_REC_CNT number(10);
+    V_P_PRCID_CNT number(10);
 
 BEGIN
 
@@ -149,6 +151,14 @@ BEGIN
         WHEN OTHERS THEN
             --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'ERROR ' || SUBSTR(SQLERRM, 1, 200));
             V_NEW_FIELD_DATA := NULL; -- Nothing but place holder
+    END;
+
+    BEGIN
+        SELECT COUNT(*) INTO V_P_PRCID_CNT FROM TBL_FORM_DTL WHERE PROCID = I_SRC_PROCID
+          AND EXISTSNODE(field_data, '/formData/items/item[id="PARENT_PROCESS_ID"]') = 1 ;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            V_P_PRCID_CNT := -1;
     END;
 
     IF V_FIELD_DATA IS NOT NULL THEN
@@ -208,6 +218,23 @@ BEGIN
                   FROM DUAL; 
                 
             END IF;
+
+            IF ( (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' or UPPER(I_SRC_FORM_TYPE) = 'RECRUITMENT') and UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT') THEN
+                IF V_P_PRCID_CNT < 1 THEN
+                    SELECT INSERTCHILDXML(V_NEW_FIELD_DATA
+                            , '/formData/items'
+                            , 'item'
+                            , XMLTYPE('<item><id>PARENT_PROCESS_ID</id><etype>textbox</etype><value>' || TO_CHAR(I_SRC_PROCID) || '</value></item>'))
+                      INTO V_NEW_FIELD_DATA
+                      FROM DUAL;
+                    --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID DID NOT EXIST - INSERTED IT INTO TARGET - FLAG VAL : ' || V_P_PRCID_CNT);                
+                ELSE
+                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PARENT_PROCESS_ID"]/value/text()', TO_CHAR(I_SRC_PROCID))                    
+                      INTO V_NEW_FIELD_DATA
+                      FROM DUAL;                     
+                    --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID EXISTED -UPDATED FOR TARGET - FLAG VAL : ' || V_P_PRCID_CNT);
+                END IF;                
+            END IF;            
 
             BEGIN
                 SELECT COUNT(*) INTO V_REC_CNT FROM TBL_FORM_DTL WHERE PROCID = I_TGT_PROCID;
