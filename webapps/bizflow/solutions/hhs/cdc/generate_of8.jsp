@@ -163,7 +163,13 @@
 		reportServerURL = CDCProperties.getProperty("report.server.url", "https://localhost/bizflowadvreport");
 		documentType = CDCProperties.getProperty("report.OF8.documentType",DEFAULT_DOCUMENT_TYPE);
 		fileName = CDCProperties.getProperty("report.OF8.fileName",DEFAULT_FILE_NAME);
-		reportPath = CDCProperties.getProperty("report.OF8.path");
+
+		if ("initial".equals(generationmode)) {
+			reportPath = CDCProperties.getProperty("report.OF8.Initial.path");
+		} else {
+			reportPath = CDCProperties.getProperty("report.OF8.path");
+		}
+		
 		useSSL = "https".equalsIgnoreCase(reportProtocol);
 
 		if (positiontitleseries != null) {
@@ -180,6 +186,7 @@
 
 System.out.println("\n\n");
 System.out.println("\tgenerationmode=" + generationmode);
+System.out.println("\treportPath=" + reportPath);
 System.out.println("\tadmincode=" + admincode);
 System.out.println("\tpositiontitle=" + positiontitle);
 System.out.println("\tpayplan=" + payplan);
