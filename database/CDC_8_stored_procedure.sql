@@ -1,5 +1,5 @@
 --------------------------------------------------------
---  File created - Thursday-June-21-2018   
+--  File created - Wednesday-August-08-2018   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Procedure SP_CLEAN_FORM_RECORDS
@@ -446,6 +446,9 @@ IS
 	V_COND_ACQUISITION_CD               VARCHAR2(4000);
 	V_COND_COMP_LVL_CD                  VARCHAR2(4000);
     V_COND_OPM_CERTIFICATION_NO         VARCHAR2(400);
+    V_COND_LMTD_TRM                     VARCHAR2(100);
+    V_COND_LMTD_EMRGNCY                 VARCHAR2(100);
+    V_COND_LMTD_TRM_NTE                 VARCHAR2(100);
 ---------- POSITION
 	V_POS_JOB_REQ_NO                    VARCHAR2(100);
 	V_POS_OFFICIAL_POS_TTL              VARCHAR2(4000);
@@ -481,6 +484,8 @@ IS
     V_DS_STATION                        VARCHAR2(400); 
 ---------- GRADES
     V_POS_GRADE_IDS                     VARCHAR2(10000);
+---------- GRADE_INFO
+    V_POS_GRADE_RELATED                 VARCHAR2(10000);
 ---------- CLA_STANDARD
     V_CLA_STANDARDS                     VARCHAR2(10000); 
 ---------- FINANCIAL_STATEMENT
@@ -750,7 +755,7 @@ BEGIN
            ,V_POS_POS_TP           
            ,V_POS_COMMON_ACCT_NO   
            ,V_POS_BACKFILL_VC      
-           ,V_POS_BACKFILL_VC_NM   
+           ,V_POS_BACKFILL_VC_NM
            ,V_POS_BACKFILL_VC_RSN  
            ,V_POS_NUM_OF_VACANCY   
            ,V_POS_APPOINTMENT_TP   
@@ -1002,12 +1007,13 @@ BEGIN
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'INCUMBENT_ONLY')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'COMMISSIONED_CORPS_ELIGIBLE')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'FINANCIAL_DISCLOSURE_REQUIRED')
-           ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'FAIR_LABOR_STANDARDS_ACT')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'CYBER_SECURITY_CODE')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'BARGAINING_UNIT_STATUS_CODE')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'ACQUISITION_CODE')
-           ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'COMPETITIVE_LEVEL_CODE')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'OPM_CERTIFICATION_NO')
+           ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'LIMITED_TERM')
+           ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'LIMITED_EMERGENCY')
+           ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'CLA_NTE')
       INTO 
             V_COND_PHYSICIAN_COMP_ALLWNC
             ,V_COND_DRUG_TEST_RQRD
@@ -1017,12 +1023,13 @@ BEGIN
             ,V_COND_INCUMBENT_ONLY
             ,V_COND_COMM_CORP_ELIGIBLE
             ,V_COND_FINANCIAL_DSCLSR_RQRD
-            ,V_COND_FAIR_LABOR_STND_ACT
             ,V_COND_CYBER_SEC_CD
             ,V_COND_BUS_CD
             ,V_COND_ACQUISITION_CD
-            ,V_COND_COMP_LVL_CD
             ,V_COND_OPM_CERTIFICATION_NO
+            ,V_COND_LMTD_TRM
+            ,V_COND_LMTD_EMRGNCY
+            ,V_COND_LMTD_TRM_NTE
        FROM DUAL;
 
     V_RECCNT := 0;
@@ -1045,12 +1052,13 @@ BEGIN
             ,INCUMBENT_ONLY
             ,COMM_CORP_ELIGIBLE
             ,FINANCIAL_DSCLSR_RQRD
-            ,FAIR_LABOR_STND_ACT
             ,CYBER_SEC_CD
             ,BUS_CD
             ,ACQUISITION_CD
-            ,COMP_LVL_CD
             ,OPM_CERT_NO
+            ,LMTD_TRM
+            ,LMTD_EMRGNCY
+            ,LMTD_TRM_NTE
         )
         VALUES 
         (
@@ -1063,12 +1071,13 @@ BEGIN
             ,V_COND_INCUMBENT_ONLY
             ,V_COND_COMM_CORP_ELIGIBLE
             ,V_COND_FINANCIAL_DSCLSR_RQRD
-            ,V_COND_FAIR_LABOR_STND_ACT
             ,V_COND_CYBER_SEC_CD
             ,V_COND_BUS_CD
             ,V_COND_ACQUISITION_CD
-            ,V_COND_COMP_LVL_CD
             ,V_COND_OPM_CERTIFICATION_NO
+            ,V_COND_LMTD_TRM
+            ,V_COND_LMTD_EMRGNCY
+            ,V_COND_LMTD_TRM_NTE            
         );
 
     END;    
@@ -1085,12 +1094,13 @@ BEGIN
             ,INCUMBENT_ONLY = V_COND_INCUMBENT_ONLY
             ,COMM_CORP_ELIGIBLE = V_COND_COMM_CORP_ELIGIBLE
             ,FINANCIAL_DSCLSR_RQRD = V_COND_FINANCIAL_DSCLSR_RQRD
-            ,FAIR_LABOR_STND_ACT = V_COND_FAIR_LABOR_STND_ACT
             ,CYBER_SEC_CD = V_COND_CYBER_SEC_CD
             ,BUS_CD = V_COND_BUS_CD
             ,ACQUISITION_CD = V_COND_ACQUISITION_CD
-            ,COMP_LVL_CD = V_COND_COMP_LVL_CD
             ,OPM_CERT_NO = V_COND_OPM_CERTIFICATION_NO
+            ,LMTD_TRM = V_COND_LMTD_TRM
+            ,LMTD_EMRGNCY = V_COND_LMTD_EMRGNCY
+            ,LMTD_TRM_NTE = V_COND_LMTD_TRM_NTE            
          WHERE CASE_ID = I_PROCID;
 
     END;
@@ -1174,7 +1184,48 @@ BEGIN
 
     END IF;  
     
-    
+    ---------- GRADE_INFO TABLE
+    --DBMS_OUTPUT.PUT_LINE('DELETE HHS_CDC_HR.GRADE_INFO');
+    DELETE 
+      FROM HHS_CDC_HR.GRADE_INFO
+     WHERE CASE_ID = I_PROCID;
+
+    SELECT FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'POS_GRADE_RELATED') 
+      INTO V_POS_GRADE_RELATED
+      FROM DUAL;
+
+    IF V_POS_GRADE_RELATED IS NOT NULL THEN
+        --DBMS_OUTPUT.PUT_LINE('INSERT HHS_CDC_HR.GRADE');
+        INSERT INTO HHS_CDC_HR.GRADE_INFO 
+        (
+            CASE_ID
+            ,GRADE_SEQ
+            ,FAIR_LABOR_STND_ACT
+            ,COMP_LVL_CD
+            ,PD_NO
+            ,JOB_CD
+        )        
+        WITH GRADE_DETAIL AS
+        (
+            SELECT I_PROCID AS CASE_ID
+                    ,substr(grade_info, 1, instr(grade_info, '%%', 1, 1)-1) GRADE
+                    ,substr(grade_info, instr(grade_info, '%%', 1, 1)+2 , instr(grade_info, '%%', 1, 2) - instr(grade_info, '%%', 1, 1) - 2) FLSA
+                    ,substr(grade_info, instr(grade_info, '%%', 1, 2)+2 , instr(grade_info, '%%', 1, 3) - instr(grade_info, '%%', 1, 2) - 2) JOB_CODE
+                    ,substr(grade_info, instr(grade_info, '%%', 1, 3)+2 , instr(grade_info, '%%', 1, 4) - instr(grade_info, '%%', 1, 3) - 2) PD_NUM
+                    ,substr(grade_info, instr(grade_info, '%%', 1, 4)+2) COMP_LEVEL
+            FROM (
+                SELECT 
+                        regexp_substr(V_POS_GRADE_RELATED,'[^::]+', 1, level) AS grade_info from dual
+                         connect by regexp_substr(V_POS_GRADE_RELATED, '[^::]+', 1, level) is not null
+                ) MYTBL
+        )
+        SELECT G.CASE_ID, G.SEQ, GD.FLSA, GD.COMP_LEVEL, GD.PD_NUM, GD.JOB_CODE
+          FROM GRADE G 
+          JOIN GRADE_DETAIL GD ON G.CASE_ID = GD.CASE_ID AND G.GRADE = GD.GRADE
+         WHERE G.CASE_ID = I_PROCID;
+         
+    END IF;  
+
     ---------- POS_TITLE_SERIES
     DELETE 
       FROM HHS_CDC_HR.POS_TITLE_SERIES
