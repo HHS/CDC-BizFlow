@@ -1,5 +1,5 @@
 --------------------------------------------------------
---  File created - Wednesday-August-08-2018   
+--  File created - Friday-August-31-2018   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Procedure SP_CLEAN_FORM_RECORDS
@@ -177,8 +177,10 @@ BEGIN
         ELSE
             --DBMS_OUTPUT.PUT_LINE('[DEBUG] V_NEW_FIELD_DATA=' || V_NEW_FIELD_DATA.getStringVal());
 
-            --Classification to Recruiment
-            IF (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' and UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT') THEN
+            --Pre-processing: add, delete, move elements from source xml before copying it to target process.
+            IF ((UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' and UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
+               OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' and UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')
+               OR (UPPER(I_SRC_FORM_TYPE) = 'RECRUITMENT' and UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
 
                 SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''genInitComplete'']')
                   INTO V_NEW_FIELD_DATA
@@ -196,6 +198,7 @@ BEGIN
                   INTO V_NEW_FIELD_DATA
                   FROM DUAL;
 
+/*
                 SELECT INSERTCHILDXML(V_NEW_FIELD_DATA
                         , '/formData/items'
                         , 'item'
@@ -203,38 +206,45 @@ BEGIN
                   INTO V_NEW_FIELD_DATA
                   FROM DUAL;
                 --DBMS_OUTPUT.PUT_LINE('[DEBUG] V_NEW_FIELD_DATA3=' || V_NEW_FIELD_DATA.getStringVal());
-                
+*/                
                 -- Special handling for different name in between Classification and Recruitment.
-                SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="POS_ORG_TITLE"]/id/text()', 'POS_FUNCTIONAL_TITLE')                    
-                  INTO V_NEW_FIELD_DATA
-                  FROM DUAL; 
-
-                SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="JOB_REC_POS_NUM"]/id/text()', 'POS_JOB_REQ_NUM')                    
-                  INTO V_NEW_FIELD_DATA
-                  FROM DUAL;
-                  
-                SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PRE_EMPLOYMENT_PHYSICAL_REQUIRED"]/id/text()', 'PRE_EMP_PHYSICAL_REQUIRED')                    
-                  INTO V_NEW_FIELD_DATA
-                  FROM DUAL; 
-                
-            END IF;
-
-            IF ( (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' or UPPER(I_SRC_FORM_TYPE) = 'RECRUITMENT') and UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT') THEN
-                IF V_P_PRCID_CNT < 1 THEN
-                    SELECT INSERTCHILDXML(V_NEW_FIELD_DATA
-                            , '/formData/items'
-                            , 'item'
-                            , XMLTYPE('<item><id>PARENT_PROCESS_ID</id><etype>textbox</etype><value>' || TO_CHAR(I_SRC_PROCID) || '</value></item>'))
+                IF ((UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' and UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
+                    or (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' and UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
+                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="POS_ORG_TITLE"]/id/text()', 'POS_FUNCTIONAL_TITLE')                    
+                      INTO V_NEW_FIELD_DATA
+                      FROM DUAL; 
+    
+                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="JOB_REC_POS_NUM"]/id/text()', 'POS_JOB_REQ_NUM')                    
                       INTO V_NEW_FIELD_DATA
                       FROM DUAL;
-                    --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID DID NOT EXIST - INSERTED IT INTO TARGET - FLAG VAL : ' || V_P_PRCID_CNT);                
-                ELSE
-                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PARENT_PROCESS_ID"]/value/text()', TO_CHAR(I_SRC_PROCID))                    
+                      
+                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PRE_EMPLOYMENT_PHYSICAL_REQUIRED"]/id/text()', 'PRE_EMP_PHYSICAL_REQUIRED')                    
                       INTO V_NEW_FIELD_DATA
-                      FROM DUAL;                     
-                    --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID EXISTED -UPDATED FOR TARGET - FLAG VAL : ' || V_P_PRCID_CNT);
-                END IF;                
-            END IF;            
+                      FROM DUAL; 
+                    
+                    --parent's parent will become GRAND_PARENT
+                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PARENT_PROCESS_ID"]/id/text()', 'GRAND_PARENT_PROCESS_ID')                    
+                      INTO V_NEW_FIELD_DATA
+                      FROM DUAL;                       
+                END IF;
+                
+            END IF;
+ 
+            --Set parent process id
+            IF V_P_PRCID_CNT < 1 THEN
+                SELECT INSERTCHILDXML(V_NEW_FIELD_DATA
+                        , '/formData/items'
+                        , 'item'
+                        , XMLTYPE('<item><id>PARENT_PROCESS_ID</id><etype>textbox</etype><value>' || TO_CHAR(I_SRC_PROCID) || '</value></item>'))
+                  INTO V_NEW_FIELD_DATA
+                  FROM DUAL;
+                --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID DID NOT EXIST - INSERTED IT INTO TARGET - FLAG VAL : ' || V_P_PRCID_CNT);                
+            ELSE
+                SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PARENT_PROCESS_ID"]/value/text()', TO_CHAR(I_SRC_PROCID))                    
+                  INTO V_NEW_FIELD_DATA
+                  FROM DUAL;                     
+                --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID EXISTED -UPDATED FOR TARGET - FLAG VAL : ' || V_P_PRCID_CNT);
+            END IF;                
 
             BEGIN
                 SELECT COUNT(*) INTO V_REC_CNT FROM TBL_FORM_DTL WHERE PROCID = I_TGT_PROCID;
@@ -243,8 +253,10 @@ BEGIN
                     V_REC_CNT := -1;
             END;
 
-            IF V_REC_CNT > 0 THEN
 
+            --Copy xml from the source to the target.
+            IF V_REC_CNT > 0 THEN
+            
                 --This is extremly rare case, becuase this process will be called at the beginning of a process.
                 --Update FIELD_DATA with new FIELD_DATA without /formData/history node
                 ----DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'UPDATE FIELD_DATA TO NEW PROCESS');
@@ -1474,7 +1486,8 @@ IS
     V_CASE_CREATOR_NM                   VARCHAR(100);
     V_CASE_CREATION_DT                  TIMESTAMP;
 -------- RECRUITMENT
-	V_REC_ADMN_CD                       VARCHAR2(20);
+	V_REC_RQST_TP                       VARCHAR2(100);
+    V_REC_ADMN_CD                       VARCHAR2(20);
 	V_REC_ORG_NM                        VARCHAR2(200);
 	V_REC_HIRING_MTHD                   VARCHAR2(20);
 	V_REC_SO_NM                         VARCHAR2(100);
@@ -1493,8 +1506,8 @@ IS
 	V_REC_JSTFCTN_NOT_VLD_STAFF_ND      VARCHAR2(4000);
 	V_REC_HIRING_OPT_GUIDE_RVWD         VARCHAR2(10);
 	V_REC_JSTFCTN_NOT_RVWNG             VARCHAR2(4000);    
-    V_REC_REQ_APPRVD_BY_HHS             VARCHAR2(10) NULL;
-    V_REC_JSTFCTN_NOT_RCVNG_HHS         VARCHAR2(4000) NULL;    
+    V_REC_REQ_APPRVD_BY_HHS             VARCHAR2(10);
+    V_REC_JSTFCTN_NOT_RCVNG_HHS         VARCHAR2(4000);    
 	V_REC_POS_BSD_MGMT_SYS_NO           VARCHAR2(100); 
 ---------- POSITION
 	V_POS_JOB_REQ_NO                    VARCHAR2(100);
@@ -1648,7 +1661,9 @@ BEGIN
     END IF;
 
     ---------- RECRUITMENT TABLE
-    SELECT FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'ADMIN_CD')
+    SELECT 
+            FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'REQUEST_TYPE')
+            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'ADMIN_CD')
             ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'ORG_NAME')
             ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'HM_ID')
             ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'SO_AutoComplete')
@@ -1667,11 +1682,12 @@ BEGIN
             ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'STF_VAL_JUST')
             ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'HIRE_GUIDE_REV')
             ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'HIRE_GUIDE_REV_JUST')
-            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'HHS_APPROVE_JUST')
             ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'HHS_APPROVE')
+            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'HHS_APPROVE_JUST')
             ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'PBMS_ID')
       INTO 
-            V_REC_ADMN_CD
+            V_REC_RQST_TP
+            ,V_REC_ADMN_CD
             ,V_REC_ORG_NM
             ,V_REC_HIRING_MTHD
             ,V_REC_SO_NM
@@ -1707,6 +1723,7 @@ BEGIN
         INSERT INTO HHS_CDC_HR.RECRUITMENT 
         (                        
                     CASE_ID
+                    ,RQST_TP
                     ,ADMN_CD
                     ,ORG_NM
                     ,HIRING_MTHD
@@ -1733,6 +1750,7 @@ BEGIN
         VALUES 
         (
                     I_PROCID
+                    ,V_REC_RQST_TP
                     ,V_REC_ADMN_CD
                     ,V_REC_ORG_NM
                     ,V_REC_HIRING_MTHD
@@ -1763,7 +1781,8 @@ BEGIN
         --DBMS_OUTPUT.PUT_LINE('UPDATE HHS_CDC_HR.RECRUITMENT');
         UPDATE HHS_CDC_HR.RECRUITMENT
            SET 
-                ADMN_CD = V_REC_ADMN_CD
+                RQST_TP = V_REC_RQST_TP
+                ,ADMN_CD = V_REC_ADMN_CD
                 ,ORG_NM = V_REC_ORG_NM
                 ,HIRING_MTHD = V_REC_HIRING_MTHD
                 ,SO_NM = V_REC_SO_NM
@@ -2153,7 +2172,7 @@ BEGIN
     END IF;
 
     ---------- POSITION TABLE
-    --DBMS_OUTPUT.PUT_LINE('GETTING POSITION VALUES');
+    DBMS_OUTPUT.PUT_LINE('GETTING POSITION VALUES');
     SELECT 
             FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'POS_JOB_REQ_NUM')
            ,'' --V_POS_OFFICIAL_POS_TTL
@@ -2171,7 +2190,7 @@ BEGIN
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'POS_BF_VICE_NAME')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'POS_NO_BF_VICE_RSN')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'POS_NUM_VACANCIES')
-           ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'POS_APPT_TYPE_ID')
+           ,FN_GET_XML_VALUE(V_FD_FIELD_DATA, 'POS_APPT_TYPE_ID', 'VALUE') -----$$$$$
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'POS_NTE')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'POS_NAME_REQUEST')
            ,FN_GET_XML_FIELD_VALUE(V_FD_FIELD_DATA, 'POS_IS_OPEN_CONTINUOUS')
@@ -2210,6 +2229,8 @@ BEGIN
            ,V_POS_EMPLOYING_OFF_LOC
       FROM DUAL; 
 
+    DBMS_OUTPUT.PUT_LINE('V_POS_APPOINTMENT_TP=' || V_POS_APPOINTMENT_TP);
+    
     --DBMS_OUTPUT.PUT_LINE('GETTING POSITION RECORD');
     V_RECCNT := 0;
     SELECT COUNT(1)
@@ -2219,7 +2240,7 @@ BEGIN
 
     IF V_RECCNT = 0 THEN
     BEGIN
-        --DBMS_OUTPUT.PUT_LINE('INSERT HHS_CDC_HR.POSITION');    
+        DBMS_OUTPUT.PUT_LINE('INSERT HHS_CDC_HR.POSITION');    
         INSERT INTO HHS_CDC_HR.POSITION
         (
             CASE_ID          
@@ -2265,7 +2286,7 @@ BEGIN
             ,V_POS_BACKFILL_VC_NM   
             ,V_POS_BACKFILL_VC_RSN  
             ,V_POS_NUM_OF_VACANCY   
-            ,V_POS_APPOINTMENT_TP   
+            ,FN_GET_LOOKUP_LABEL('AppointmentType', V_POS_APPOINTMENT_TP)
             ,V_POS_NOT_TO_EXCEED    
             ,V_POS_NAME_REQUEST     
             ,V_POS_POS_OPEN_CONT    
@@ -2280,7 +2301,8 @@ BEGIN
     END;
     ELSE
     BEGIN
-        --DBMS_OUTPUT.PUT_LINE('UPDATE HHS_CDC_HR.POSITION');
+        DBMS_OUTPUT.PUT_LINE('UPDATE HHS_CDC_HR.POSITION');
+        DBMS_OUTPUT.PUT_LINE('V_POS_APPOINTMENT_TP=' || TO_CHAR(V_POS_APPOINTMENT_TP));
         UPDATE HHS_CDC_HR.POSITION
            SET JOB_REQ_NO = V_POS_JOB_REQ_NO
                ,ORG_POS_TTL = V_POS_ORG_POS_TTL
@@ -2296,7 +2318,7 @@ BEGIN
                ,BACKFILL_VC_NM = V_POS_BACKFILL_VC_NM
                ,BACKFILL_VC_RSN = V_POS_BACKFILL_VC_RSN
                ,NUM_OF_VACANCY = V_POS_NUM_OF_VACANCY
-               ,APPOINTMENT_TP = V_POS_APPOINTMENT_TP
+               ,APPOINTMENT_TP = FN_GET_LOOKUP_LABEL('AppointmentType', V_POS_APPOINTMENT_TP)
                ,NOT_TO_EXCEED = V_POS_NOT_TO_EXCEED 
                ,NAME_REQUEST = V_POS_NAME_REQUEST  
                ,POS_OPEN_CONT = V_POS_POS_OPEN_CONT

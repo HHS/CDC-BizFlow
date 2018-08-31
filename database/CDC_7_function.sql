@@ -1,5 +1,5 @@
 --------------------------------------------------------
---  File created - Monday-June-18-2018   
+--  File created - Friday-August-31-2018   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Function FN_CONCAT_HR_RECORDS
@@ -42,7 +42,7 @@ begin
     group by case_id;
 */
 
-    PLSQL_BLOCK := ' BEGIN select listagg( ' || columnname || ' , '';'') WITHIN GROUP (ORDER BY case_id) '
+    PLSQL_BLOCK := ' BEGIN select listagg( ' || columnname || ' , ''; '') WITHIN GROUP (ORDER BY case_id) '
                     || ' into :x '
                     || ' from ' || tablename || ' '
                     || ' where case_id = ' || TO_CHAR(case_id)
@@ -282,5 +282,75 @@ WHEN NO_DATA_FOUND THEN
 WHEN OTHERS THEN
     RETURN '';
 END FN_GET_XML_NODE_VALUE;
+
+/
+--------------------------------------------------------
+--  DDL for Function FN_GET_XML_VALUE
+--------------------------------------------------------
+
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_GET_XML_VALUE" (   
+    I_XMLNODE IN XMLTYPE,
+    I_FIELD_ID IN VARCHAR2,
+    I_VALUE_TYPE IN VARCHAR2
+) RETURN VARCHAR2
+
+    ------------------------------------------------------------------------------------------
+    --  Procedure name	    : 	FN_GET_XML_VALUE
+    --	Author				:	Taeho Lee <thee@bizflow.com>
+    --	Copyright			:	BizFlow Corp.	
+    --	
+    --	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
+    --	Purpose				:	Get a field value in a XMLTYPE field
+    --	
+    --  Example
+    --  To use in SQL statements:
+    --
+    -- 	WHEN		WHO			WHAT		
+    -- 	-----------	--------	-------------------------------------------------------
+    -- 	08/29/2018	THLEE		Created
+    ------------------------------------------------------------------------------------------
+
+AS 
+
+    NODE_VALUE  VARCHAR2(10000) := NULL;
+
+BEGIN
+    --DBMS_OUTPUT.PUT_LINE('I_FIELD_ID=' || I_FIELD_ID);
+    IF I_XMLNODE IS NOT NULL THEN
+    
+        IF UPPER(I_VALUE_TYPE) = 'VALUE' THEN
+            BEGIN
+                    SELECT TBL.FIELDVALUE
+                      INTO NODE_VALUE
+                      FROM ( 
+                            SELECT extractvalue(I_XMLNODE, '/formData/items/item[id="' || I_FIELD_ID || '"]/value/text()') as FIELDVALUE
+                              FROM DUAL
+                           ) TBL
+                     WHERE (TBL.FIELDVALUE IS NOT NULL OR TBL.FIELDVALUE != '') 
+                       AND ROWNUM = 1;
+            END;
+        ELSE
+            BEGIN
+                    SELECT TBL.FIELDVALUE
+                      INTO NODE_VALUE
+                      FROM ( 
+                            SELECT extractvalue(I_XMLNODE, '/formData/items/item[id="' || I_FIELD_ID || '"]/text/text()') as FIELDVALUE
+                              FROM DUAL
+                           ) TBL
+                     WHERE (TBL.FIELDVALUE IS NOT NULL OR TBL.FIELDVALUE != '') 
+                       AND ROWNUM = 1;        
+            END;
+        END IF;
+    
+    END IF;
+
+    RETURN NODE_VALUE;
+
+EXCEPTION 
+WHEN NO_DATA_FOUND THEN
+    RETURN '';
+WHEN OTHERS THEN
+    RETURN '';
+END FN_GET_XML_VALUE;
 
 /
