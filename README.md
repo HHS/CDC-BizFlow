@@ -69,7 +69,7 @@ Source Repository: *https://github.com/HHS/CDC-BizFlow* This repository includes
 3. Create a "export" folder if not exists.
 > ex) C:\Program Files (x86)\BizFlowReporting\buildomatic\export
 4. Export reports with command below
-> js-export --output-zip ./export/CDCReports.zip --uris   /organizations/organization_1/reports/CDC/CDC_OF8
+> js-export --output-zip ./export/CDCReports.zip --uris /organizations/organization_1/reports/CDC/SampleOF8,/organizations/organization_1/reports/CDC/CDC_OF8,/organizations/organization_1/reports/CDC/CDC_OF8_All_Grades,/organizations/organization_1/reports/CDC/CDC_Pre_Recruitment_Consultation_report
 5. Capture the generated export zip file.
 
 
