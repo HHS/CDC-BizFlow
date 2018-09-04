@@ -6,7 +6,7 @@ WHERE PROCDEFID = (SELECT PROCDEFID
         FROM PROCDEF
         WHERE ISFINAL = 'T'
         AND ENVTYPE = 'O'
-        AND NAME = 'Classification'
+        AND NAME = 'Appointment'
         )
 AND RLVNTDATADEFNAME != 'wihmode'
 ORDER BY RLVNTDATADEFNAME
