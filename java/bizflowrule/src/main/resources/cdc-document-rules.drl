@@ -2922,6 +2922,96 @@ rule "Classification / Rule HiringMethod = Title 42, SubmissionReason = New, Req
         addDocument($workflowDocuments, "Organizational Chart", true);
 end
 
+rule "Classification / Rule HiringMethod = Title 42, SubmissionReason = New, RequestType = Classification Only, and EmployeeType = FTE"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $fieldRT    :   ( WorkflowField
+                            (
+                                fieldId == "RequestType",
+                                fieldValue == "Classification Only"
+                            ) from $fields
+                        )
+
+        $fieldET    :   ( WorkflowField
+                            (
+                                fieldId == "EmployeeType",
+                                fieldValue == "FTE"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C1>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Rule HiringMethod = Title 42, SubmissionReason = New, RequestType = Recruitment with Classification, and EmployeeType = FTE"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $fieldRT    :   ( WorkflowField
+                            (
+                                fieldId == "RequestType",
+                                fieldValue == "Recruitment with Classification"
+                            ) from $fields
+                        )
+
+        $fieldET    :   ( WorkflowField
+                            (
+                                fieldId == "EmployeeType",
+                                fieldValue == "FTE"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C1>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
 rule "Classification / Rule HiringMethod = Title 42, SubmissionReason = New, RequestType = Appointment with Classification, and EmployeeType = FTE "
     when
 
@@ -2974,6 +3064,96 @@ rule "Classification / Rule HiringMethod = Title 42, SubmissionReason = New, Req
         addDocument($workflowDocuments, "Email from PHIO/OSSAM certifying prescreen for all non-citizens", false);
         addDocument($workflowDocuments, "Fellowship Service Agreement For Travel and Transportation Expenses", false);
         addDocument($workflowDocuments, "CIO Peer Review Board Concurrence", false);        
+end
+
+rule "Classification / Rule HiringMethod = Title 42, SubmissionReason = New, RequestType = Classification Only, and EmployeeType = Non-FTE"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $fieldRT    :   ( WorkflowField
+                            (
+                                fieldId == "RequestType",
+                                fieldValue == "Classification Only"
+                            ) from $fields
+                        )
+
+        $fieldET    :   ( WorkflowField
+                            (
+                                fieldId == "EmployeeType",
+                                fieldValue == "Non-FTE"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C1>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Classification / Rule HiringMethod = Title 42, SubmissionReason = New, RequestType = Recruitment with Classification, and EmployeeType = Non-FTE"
+    when
+
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            tenantID == "CDC",
+                            procName == "Classification",
+                            $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldSR    :   ( WorkflowField
+                            (
+                                fieldId == "SubmissionReason",
+                                fieldValue == "New"
+                            ) from $fields
+                        )
+
+        $fieldRT    :   ( WorkflowField
+                            (
+                                fieldId == "RequestType",
+                                fieldValue == "Recruitment with Classification"
+                            ) from $fields
+                        )
+
+        $fieldET    :   ( WorkflowField
+                            (
+                                fieldId == "EmployeeType",
+                                fieldValue == "Non-FTE"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+    then
+        System.out.println("RULE C1>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
 end
 
 rule "Classification / Rule HiringMethod = Title 42, SubmissionReason = New, RequestType = Appointment with Classification, and EmployeeType = Non-FTE "
