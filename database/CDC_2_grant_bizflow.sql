@@ -11,20 +11,11 @@
 --
 -- 	WHEN		WHO			WHAT		
 -- 	-----------	--------	-------------------------------------------------------
--- 	04/13/2018	THLEE		Created
+-- 	09/20/2018	THLEE		Created
 ------------------------------------------------------------------------------------------
 
 
 -- grant workflow table access to role
-BEGIN
-	FOR ATAB IN (SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = 'BIZFLOW') LOOP
-		EXECUTE IMMEDIATE 'GRANT ALL ON BIZFLOW.'||ATAB.TABLE_NAME||' TO BF_DEV_ROLE';
-	END LOOP;
-END;
-
--- privilege on BIZFLOW tables to be used in stored procedure of HHS_CDC_HR schema
--- NOTE: This cannot be granted through role and should be granted individually and directly to user
-
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON BIZFLOW.RLVNTDATA TO HHS_CDC_HR;
 GRANT SELECT, INSERT, UPDATE, DELETE ON BIZFLOW.PROCDEF TO HHS_CDC_HR;
@@ -33,5 +24,4 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON BIZFLOW.ACT TO HHS_CDC_HR;
 GRANT SELECT, INSERT, UPDATE, DELETE ON BIZFLOW.WITEM TO HHS_CDC_HR;
 GRANT SELECT, INSERT, UPDATE, DELETE ON BIZFLOW.MEMBER TO HHS_CDC_HR WITH GRANT OPTION;
 GRANT SELECT, INSERT, UPDATE, DELETE ON BIZFLOW.USRGRPPRTCP TO HHS_CDC_HR WITH GRANT OPTION;
-
 

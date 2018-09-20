@@ -43,13 +43,12 @@ CREATE USER CDCDEV IDENTIFIED BY <replace_with_password>
 ;
 
 
-
 ----------------------------------------------------
 -- Create role and grant privilege
 ----------------------------------------------------
 CREATE ROLE HHS_CDC_HR_RW_ROLE;
 CREATE ROLE HHS_CDC_HR_DEV_ROLE;
-CREATE ROLE BF_DEV_ROLE;
+--CREATE ROLE BF_DEV_ROLE;
 
 -- grant CDC role to CDC user
 GRANT CONNECT, RESOURCE, HHS_CDC_HR_RW_ROLE TO HHS_CDC_HR;
@@ -70,12 +69,13 @@ GRANT ALTER SESSION, CREATE CLUSTER, CREATE DATABASE LINK
 ;
 
 -- grant workflow table access to role
+/*
 BEGIN
 	FOR ATAB IN (SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = 'BIZFLOW') LOOP
 		EXECUTE IMMEDIATE 'GRANT ALL ON BIZFLOW.'||ATAB.TABLE_NAME||' TO BF_DEV_ROLE';
 	END LOOP;
 END;
-
+*/
 
 ----------------------------------------------------
 -- CROSS schema access
@@ -86,8 +86,8 @@ GRANT HHS_CDC_HR_RW_ROLE TO BIZFLOW;
 
 
 -- grant WORKFLOW database access role to HHS_CDC_HR database user
-GRANT BF_DEV_ROLE TO HHS_CDC_HR;
+--GRANT BF_DEV_ROLE TO HHS_CDC_HR;
 
 
 -- grant WORKFLOW database access role to CDCDEV database user
-GRANT BF_DEV_ROLE TO CDCDEV;
+--GRANT BF_DEV_ROLE TO CDCDEV;
