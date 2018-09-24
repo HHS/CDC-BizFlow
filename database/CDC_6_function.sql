@@ -361,3 +361,173 @@ END FN_GET_XML_VALUE;
   CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."SQUIRREL_GET_ERROR_OFFSET" (query IN varchar2) return number authid current_user is      l_theCursor     integer default dbms_sql.open_cursor;      l_status        integer; begin          begin          dbms_sql.parse(  l_theCursor, query, dbms_sql.native );          exception                  when others then l_status := dbms_sql.last_error_position;          end;          dbms_sql.close_cursor( l_theCursor );          return l_status; end; 
 
 /
+
+
+create or replace FUNCTION HHS_CDC_HR.FN_PARSENAME 
+(
+  I_FULLNAME IN VARCHAR2 
+, I_NAMEFORMAT IN VARCHAR2 
+) RETURN VARCHAR2 AS
+
+    FORMATTED_NAME VARCHAR2(1000);
+    FULL_NAME VARCHAR2(1000);
+    FIRST_NAME VARCHAR2(200);
+    MIDDLE_NAME VARCHAR2(200);
+    LAST_NAME VARCHAR2(200);
+    SUFFIX_NAME VARCHAR2(200);
+    IDX_COMMA INTEGER;
+    IDX_SPACE INTEGER;
+    
+BEGIN
+
+    IF I_FULLNAME IS NOT NULL THEN
+        BEGIN    
+
+            SELECT REPLACE(I_FULLNAME, '  ', '')
+              INTO FULL_NAME
+              FROM DUAL;
+
+            SELECT INSTR(FULL_NAME, ',')
+              INTO IDX_COMMA
+              FROM DUAL;
+
+            SELECT INSTR(FULL_NAME, ' ')
+              INTO IDX_SPACE
+              FROM DUAL;
+
+            IF (IDX_COMMA > 0) THEN
+                --FORMATTED_NAME := 'COMMA';
+                
+                SELECT REGEXP_SUBSTR(FULL_NAME,'[^, .]+',1,1),
+                      REGEXP_SUBSTR(FULL_NAME,'[^, .]+',1,2),
+                      REGEXP_SUBSTR(FULL_NAME,'[^, .]+',1,3),
+                      TRANSLATE(REGEXP_SUBSTR(FULL_NAME,'( |\.|,)(JR|MR|MS|SR)(\.|,|$)',1,1),'A ,.','A')
+                  INTO
+                        LAST_NAME
+                        ,FIRST_NAME
+                        ,MIDDLE_NAME
+                        ,SUFFIX_NAME
+                  FROM DUAL;
+
+            ELSE
+
+                IF (IDX_SPACE > 0) THEN
+                    SELECT REGEXP_SUBSTR(FULL_NAME,'[^, .]+',1,1),
+                          REGEXP_SUBSTR(FULL_NAME,'[^, .]+',1,2),
+                          REGEXP_SUBSTR(FULL_NAME,'[^, .]+',1,3),
+                          TRANSLATE(REGEXP_SUBSTR(FULL_NAME,'( |\.|,)(JR|MR|MS|SR)(\.|,|$)',1,1),'A ,.','A')
+                      INTO
+                            FIRST_NAME
+                            ,MIDDLE_NAME
+                            ,LAST_NAME
+                            ,SUFFIX_NAME
+                      FROM DUAL;
+                ELSE
+                    LAST_NAME := FULL_NAME;
+                    FIRST_NAME := '';
+                    MIDDLE_NAME := '';
+                    SUFFIX_NAME := '';
+
+                END IF;
+
+            END IF;
+            
+            --Exception Cases
+            IF LAST_NAME IS NULL AND MIDDLE_NAME IS NOT NULL THEN
+                LAST_NAME := MIDDLE_NAME;
+                MIDDLE_NAME := '';
+            END IF;
+            
+            IF MIDDLE_NAME = SUFFIX_NAME THEN
+                MIDDLE_NAME := '';
+            END IF;            
+
+            IF LAST_NAME = SUFFIX_NAME THEN
+                LAST_NAME := MIDDLE_NAME;
+                MIDDLE_NAME := '';
+            END IF;
+
+            IF LAST_NAME = SUFFIX_NAME THEN
+                LAST_NAME := MIDDLE_NAME;
+                MIDDLE_NAME := '';
+            END IF;
+            
+        END;    
+    ELSE
+        FORMATTED_NAME := '';
+    END IF;
+    
+    IF (I_NAMEFORMAT = 'FULL') THEN
+    
+        IF (SUFFIX_NAME IS NOT NULL) THEN
+            FORMATTED_NAME := LAST_NAME || ', ' || FIRST_NAME || ' ' || MIDDLE_NAME || '.' || SUFFIX_NAME;
+        ELSE
+            FORMATTED_NAME := LAST_NAME || ', ' || FIRST_NAME || ' ' || MIDDLE_NAME;
+        END IF;
+        
+    ELSIF (I_NAMEFORMAT = 'INITIAL') THEN
+        FORMATTED_NAME := UPPER(SUBSTR(FIRST_NAME,1,1)) || UPPER(SUBSTR(LAST_NAME, 1,1));
+        
+    ELSIF (I_NAMEFORMAT = 'FULL+INITIAL') THEN
+        IF (SUFFIX_NAME IS NOT NULL) THEN
+            FORMATTED_NAME := LAST_NAME || ', ' || FIRST_NAME || ' ' || MIDDLE_NAME || '.' || SUFFIX_NAME || ' [' || UPPER(SUBSTR(FIRST_NAME,1,1)) || UPPER(SUBSTR(LAST_NAME, 1,1)) || ']';
+        ELSE
+            FORMATTED_NAME := LAST_NAME || ', ' || FIRST_NAME || ' ' || MIDDLE_NAME || ' [' || UPPER(SUBSTR(FIRST_NAME,1,1)) || UPPER(SUBSTR(LAST_NAME, 1,1)) || ']';
+        END IF;
+    ELSE
+        IF (SUFFIX_NAME IS NOT NULL) THEN
+            FORMATTED_NAME := LAST_NAME || ', ' || FIRST_NAME || ' ' || MIDDLE_NAME || '.' || SUFFIX_NAME;
+        ELSE
+            FORMATTED_NAME := LAST_NAME || ', ' || FIRST_NAME || ' ' || MIDDLE_NAME;
+        END IF;
+        
+    END IF;
+    
+    RETURN FORMATTED_NAME;
+
+END FN_PARSENAME;
+/
+
+
+create or replace FUNCTION HHS_CDC_HR.FN_GET_ACT_CMPLTUSR 
+(
+  I_PROCID IN NUMBER 
+, I_ACTNAME IN VARCHAR2 
+, I_RETTYPE IN VARCHAR2 
+) RETURN VARCHAR2 IS
+
+    RETVALUE VARCHAR2(2000);
+    CMPLT_USR_ID VARCHAR2(10);
+    CMPLT_USR_NAME VARCHAR2(200);
+
+BEGIN
+
+    WITH CMPLUSRS AS (
+        SELECT W.CMPLTUSRNAME, W.CMPLTUSR
+        FROM bizflow.ACT A
+            JOIN bizflow.WITEM W ON W.PROCID = A.PROCID and W.ACTSEQ = A.ACTSEQ
+        WHERE A.TYPE = 'P'
+        AND A.CMPLTDTIME IS NOT NULL
+        AND A.PROCID = I_PROCID
+        AND UPPER(A.NAME) = UPPER(I_ACTNAME)
+        ORDER BY W.WITEMSEQ DESC)
+    SELECT CMPLTUSRNAME, CMPLTUSR
+      INTO CMPLT_USR_NAME
+            ,CMPLT_USR_ID  
+    FROM CMPLUSRS
+    WHERE rownum = 1;
+
+    IF (I_RETTYPE = 'ID') THEN
+        RETVALUE := CMPLT_USR_ID;
+    ELSE
+        SELECT HHS_CDC_HR.FN_PARSENAME(CMPLT_USR_NAME, I_RETTYPE)
+          INTO CMPLT_USR_NAME
+          FROM DUAL;
+          
+        RETVALUE := CMPLT_USR_NAME;
+    END IF;
+
+  RETURN RETVALUE;
+
+END FN_GET_ACT_CMPLTUSR;
+
