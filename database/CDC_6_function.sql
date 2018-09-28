@@ -1,11 +1,11 @@
 --------------------------------------------------------
---  File created - Wednesday-September-26-2018   
+--  File created - Friday-September-28-2018   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Function FN_CONCAT_HR_RECORDS
 --------------------------------------------------------
 
-  CREATE OR REPLACE FUNCTION "FN_CONCAT_HR_RECORDS" (
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_CONCAT_HR_RECORDS" (
   tablename in varchar2, 
   columnname in varchar2, 
   case_id in number 
@@ -58,57 +58,10 @@ end fn_concat_hr_records;
 
 /
 --------------------------------------------------------
---  DDL for Function FN_GET_ACT_CMPLTUSR
---------------------------------------------------------
-
-  CREATE OR REPLACE FUNCTION "FN_GET_ACT_CMPLTUSR" 
-(
-  I_PROCID IN NUMBER 
-, I_ACTNAME IN VARCHAR2 
-, I_RETTYPE IN VARCHAR2 
-) RETURN VARCHAR2 IS
-
-    RETVALUE VARCHAR2(2000);
-    CMPLT_USR_ID VARCHAR2(10);
-    CMPLT_USR_NAME VARCHAR2(200);
-
-BEGIN
-
-    WITH CMPLUSRS AS (
-        SELECT W.CMPLTUSRNAME, W.CMPLTUSR
-        FROM bizflow.ACT A
-            JOIN bizflow.WITEM W ON W.PROCID = A.PROCID and W.ACTSEQ = A.ACTSEQ
-        WHERE A.TYPE = 'P'
-        AND A.CMPLTDTIME IS NOT NULL
-        AND A.PROCID = I_PROCID
-        AND UPPER(A.NAME) = UPPER(I_ACTNAME)
-        ORDER BY W.WITEMSEQ DESC)
-    SELECT CMPLTUSRNAME, CMPLTUSR
-      INTO CMPLT_USR_NAME
-            ,CMPLT_USR_ID  
-    FROM CMPLUSRS
-    WHERE rownum = 1;
-
-    IF (I_RETTYPE = 'ID') THEN
-        RETVALUE := CMPLT_USR_ID;
-    ELSE
-        SELECT HHS_CDC_HR.FN_PARSENAME(CMPLT_USR_NAME, I_RETTYPE)
-          INTO CMPLT_USR_NAME
-          FROM DUAL;
-
-        RETVALUE := CMPLT_USR_NAME;
-    END IF;
-
-  RETURN RETVALUE;
-
-END FN_GET_ACT_CMPLTUSR;
-
-/
---------------------------------------------------------
 --  DDL for Function FN_GET_FORM_DATA_FIELD_VALUE
 --------------------------------------------------------
 
-  CREATE OR REPLACE FUNCTION "FN_GET_FORM_DATA_FIELD_VALUE" ( 
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_GET_FORM_DATA_FIELD_VALUE" ( 
     I_PROCID IN INTEGER
     ,I_FIELD_ID IN VARCHAR2
 ) RETURN VARCHAR2 
@@ -167,7 +120,7 @@ END FN_GET_FORM_DATA_FIELD_VALUE;
 --  DDL for Function FN_GET_LOOKUP_LABEL
 --------------------------------------------------------
 
-  CREATE OR REPLACE FUNCTION "FN_GET_LOOKUP_LABEL" 
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_GET_LOOKUP_LABEL" 
 (
   LTYPE IN VARCHAR2 
 , LCODE IN VARCHAR2 
@@ -200,7 +153,7 @@ END FN_GET_LOOKUP_LABEL;
 --  DDL for Function FN_GET_LOOKUP_LABEL_BY_NAME
 --------------------------------------------------------
 
-  CREATE OR REPLACE FUNCTION "FN_GET_LOOKUP_LABEL_BY_NAME" 
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_GET_LOOKUP_LABEL_BY_NAME" 
 (
   LTYPE IN VARCHAR2 
 , LNAME IN VARCHAR2 
@@ -233,7 +186,7 @@ END FN_GET_LOOKUP_LABEL_BY_NAME;
 --  DDL for Function FN_GET_XML_FIELD_VALUE
 --------------------------------------------------------
 
-  CREATE OR REPLACE FUNCTION "FN_GET_XML_FIELD_VALUE" (   
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_GET_XML_FIELD_VALUE" (   
     I_XMLNODE IN XMLTYPE,
     I_FIELD_ID IN VARCHAR2
 ) RETURN VARCHAR2
@@ -291,7 +244,7 @@ END FN_GET_XML_FIELD_VALUE;
 --  DDL for Function FN_GET_XML_NODE_VALUE
 --------------------------------------------------------
 
-  CREATE OR REPLACE FUNCTION "FN_GET_XML_NODE_VALUE" (   
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_GET_XML_NODE_VALUE" (   
     I_XMLNODE IN XMLTYPE,
     I_FIELD_ID IN VARCHAR2
 ) RETURN VARCHAR2
@@ -341,7 +294,7 @@ END FN_GET_XML_NODE_VALUE;
 --  DDL for Function FN_GET_XML_VALUE
 --------------------------------------------------------
 
-  CREATE OR REPLACE FUNCTION "FN_GET_XML_VALUE" (   
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_GET_XML_VALUE" (   
     I_XMLNODE IN XMLTYPE,
     I_FIELD_ID IN VARCHAR2,
     I_VALUE_TYPE IN VARCHAR2
@@ -412,7 +365,7 @@ END FN_GET_XML_VALUE;
 --  DDL for Function FN_PARSENAME
 --------------------------------------------------------
 
-  CREATE OR REPLACE FUNCTION "FN_PARSENAME" 
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_PARSENAME" 
 (
   I_FULLNAME IN VARCHAR2 
 , I_NAMEFORMAT IN VARCHAR2 
@@ -535,5 +488,52 @@ BEGIN
     RETURN FORMATTED_NAME;
 
 END FN_PARSENAME;
+
+/
+--------------------------------------------------------
+--  DDL for Function FN_GET_ACT_CMPLTUSR
+--------------------------------------------------------
+
+  CREATE OR REPLACE FUNCTION "HHS_CDC_HR"."FN_GET_ACT_CMPLTUSR" 
+(
+  I_PROCID IN NUMBER 
+, I_ACTNAME IN VARCHAR2 
+, I_RETTYPE IN VARCHAR2 
+) RETURN VARCHAR2 IS
+
+    RETVALUE VARCHAR2(2000);
+    CMPLT_USR_ID VARCHAR2(10);
+    CMPLT_USR_NAME VARCHAR2(200);
+
+BEGIN
+
+    WITH CMPLUSRS AS (
+        SELECT W.CMPLTUSRNAME, W.CMPLTUSR
+        FROM bizflow.ACT A
+            JOIN bizflow.WITEM W ON W.PROCID = A.PROCID and W.ACTSEQ = A.ACTSEQ
+        WHERE A.TYPE = 'P'
+        AND A.CMPLTDTIME IS NOT NULL
+        AND A.PROCID = I_PROCID
+        AND UPPER(A.NAME) = UPPER(I_ACTNAME)
+        ORDER BY W.WITEMSEQ DESC)
+    SELECT CMPLTUSRNAME, CMPLTUSR
+      INTO CMPLT_USR_NAME
+            ,CMPLT_USR_ID  
+    FROM CMPLUSRS
+    WHERE rownum = 1;
+
+    IF (I_RETTYPE = 'ID') THEN
+        RETVALUE := CMPLT_USR_ID;
+    ELSE
+        SELECT HHS_CDC_HR.FN_PARSENAME(CMPLT_USR_NAME, I_RETTYPE)
+          INTO CMPLT_USR_NAME
+          FROM DUAL;
+
+        RETVALUE := CMPLT_USR_NAME;
+    END IF;
+
+  RETURN RETVALUE;
+
+END FN_GET_ACT_CMPLTUSR;
 
 /

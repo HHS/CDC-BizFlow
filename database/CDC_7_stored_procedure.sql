@@ -1,12 +1,12 @@
 --------------------------------------------------------
---  File created - Wednesday-September-26-2018   
+--  File created - Friday-September-28-2018   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Procedure SP_CLEAN_FORM_RECORDS
 --------------------------------------------------------
 set define off;
 
-  CREATE OR REPLACE PROCEDURE "SP_CLEAN_FORM_RECORDS" 
+  CREATE OR REPLACE PROCEDURE "HHS_CDC_HR"."SP_CLEAN_FORM_RECORDS" 
 (
   I_PROCID IN NUMBER 
 ) 
@@ -126,246 +126,13 @@ BEGIN
 END SP_CLEAN_FORM_RECORDS;
 
 /
---------------------------------------------------------
---  DDL for Procedure SP_DATACOPY_FORM_DATA
---------------------------------------------------------
-set define off;
 
-  CREATE OR REPLACE PROCEDURE "SP_DATACOPY_FORM_DATA" 
-(
-	I_SRC_PROCID      IN NUMBER
-    , I_SRC_FORM_TYPE   IN VARCHAR2
-    , I_TGT_PROCID      IN NUMBER
-	, I_TGT_FORM_TYPE   IN VARCHAR2
-)
-    ------------------------------------------------------------------------------------------
-    --  Procedure name	    : 	SP_DATACOPY_FORM_DATA
-    --	Author				:	Taeho Lee <thee@bizflow.com>
-    --	Copyright			:	BizFlow Corp.	
-    --	
-    --	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
-    --	Purpose				:	Data Copy between BizFlow processes
-    --	
-    --  Example
-    --  To use in SQL statements:
-    --
-    -- 	WHEN		WHO			WHAT		
-    -- 	-----------	--------	-------------------------------------------------------
-    -- 	03/29/2018	THLEE		Created
-    -- 	04/20/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'POS_ORG_TITLE' with 'POS_FUNCTIONAL_TITLE'
-    -- 	05/03/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'JOB_REC_POS_NUM' with 'POS_JOB_REQ_NUM'
-    -- 	05/03/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'PRE_EMPLOYMENT_PHYSICAL_REQUIRED' with 'PRE_EMP_PHYSICAL_REQUIRED'    
-    -- 	06/19/2018	SGURUNG		Added code to have the Appointment WF use PROCID from its parent WF as its Parent Process ID
-    ------------------------------------------------------------------------------------------
-
-IS
-
-	V_ID NUMBER(20);
-
-	V_USER VARCHAR2(50);
-	V_PROCID NUMBER(10);
-	V_ACTSEQ NUMBER(10);
-    V_WITEMSEQ NUMBER(10);
-    V_FORM_TYPE VARCHAR2(50);
-    V_FIELD_DATA XMLTYPE;
-
-    V_CRT_DT TIMESTAMP(6);
-    V_CRT_USR VARCHAR2(50);
-    V_MOD_DT TIMESTAMP(6);
-    V_MOD_USR VARCHAR2(50);
-
-    V_NEW_FIELD_DATA XMLTYPE;
-    V_REC_CNT number(10);
-    V_P_PRCID_CNT number(10);
-
-BEGIN
-
-    --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'SP_DATACOPY_FORM_DATA IS CALLED');
-    --GET Form Data XML document from the source process
-    BEGIN
-        --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'Getting FIELD_DATA');
-        SELECT PROCID, ACTSEQ, WITEMSEQ, FORM_TYPE, FIELD_DATA, CRT_DT, CRT_USR, MOD_DT, MOD_USR
-          INTO V_PROCID, V_ACTSEQ, V_WITEMSEQ, V_FORM_TYPE, V_FIELD_DATA, V_CRT_DT, V_CRT_USR, V_MOD_DT, V_MOD_USR 
-          FROM HHS_CDC_HR.TBL_FORM_DTL
-        WHERE PROCID = I_SRC_PROCID;
-
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'NO FIELD_DATA FOUND');
-            V_NEW_FIELD_DATA := NULL; -- Nothing but place holder
-        WHEN OTHERS THEN
-            --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'ERROR ' || SUBSTR(SQLERRM, 1, 200));
-            V_NEW_FIELD_DATA := NULL; -- Nothing but place holder
-    END;
-
-    BEGIN
-        SELECT COUNT(*) INTO V_P_PRCID_CNT FROM TBL_FORM_DTL WHERE PROCID = I_SRC_PROCID
-          AND EXISTSNODE(field_data, '/formData/items/item[id="PARENT_PROCESS_ID"]') = 1 ;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            V_P_PRCID_CNT := -1;
-    END;
-
-    IF V_FIELD_DATA IS NOT NULL THEN
-
-        V_NEW_FIELD_DATA := NULL;
-
-        --Common Seciton
-        --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'Removing history node from FIELD_DATA');
-        SELECT DELETEXML(V_FIELD_DATA, '/formData/history')
-          INTO V_NEW_FIELD_DATA
-          FROM DUAL;
-
-        IF V_NEW_FIELD_DATA IS NULL THEN
-            V_NEW_FIELD_DATA := NULL; -- Nothing but place holder
-            --DBMS_OUTPUT.PUT_LINE('[DEBUG] V_NEW_FIELD_DATA IS NULL');
-        ELSE
-            --DBMS_OUTPUT.PUT_LINE('[DEBUG] V_NEW_FIELD_DATA=' || V_NEW_FIELD_DATA.getStringVal());
-
-            --Pre-processing: add, delete, move elements from source xml before copying it to target process.
-            IF ((UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
-               OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')
-               OR (UPPER(I_SRC_FORM_TYPE) = 'RECRUITMENT' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
-
-                SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''genInitComplete'']')
-                  INTO V_NEW_FIELD_DATA
-                  FROM DUAL;
-
-                SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''posInitComplete'']')
-                  INTO V_NEW_FIELD_DATA
-                  FROM DUAL;
-
-                SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''claInitComplete'']')
-                  INTO V_NEW_FIELD_DATA
-                  FROM DUAL;
-
-                SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''concInitComplete'']')
-                  INTO V_NEW_FIELD_DATA
-                  FROM DUAL;
-
-                -- Special handling for different name in between Classification and Recruitment.
-                IF ((UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
-                    OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
-                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="POS_ORG_TITLE"]/id/text()', 'POS_FUNCTIONAL_TITLE')                    
-                      INTO V_NEW_FIELD_DATA
-                      FROM DUAL; 
-    
-                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="JOB_REC_POS_NUM"]/id/text()', 'POS_JOB_REQ_NUM')                    
-                      INTO V_NEW_FIELD_DATA
-                      FROM DUAL;
-                      
-                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PRE_EMPLOYMENT_PHYSICAL_REQUIRED"]/id/text()', 'PRE_EMP_PHYSICAL_REQUIRED')                    
-                      INTO V_NEW_FIELD_DATA
-                      FROM DUAL; 
-                    
-                    --parent's parent will become GRAND_PARENT
-                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PARENT_PROCESS_ID"]/id/text()', 'GRAND_PARENT_PROCESS_ID')                    
-                      INTO V_NEW_FIELD_DATA
-                      FROM DUAL;                       
-                END IF;
-                
-            END IF;
- 
-            --Set parent process id
-            IF V_P_PRCID_CNT < 1 THEN
-                SELECT INSERTCHILDXML(V_NEW_FIELD_DATA
-                        , '/formData/items'
-                        , 'item'
-                        , XMLTYPE('<item><id>PARENT_PROCESS_ID</id><etype>textbox</etype><value>' || TO_CHAR(I_SRC_PROCID) || '</value></item>'))
-                  INTO V_NEW_FIELD_DATA
-                  FROM DUAL;
-                --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID DID NOT EXIST - INSERTED IT INTO TARGET - FLAG VAL : ' || V_P_PRCID_CNT);                
-            ELSE
-                SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PARENT_PROCESS_ID"]/value/text()', TO_CHAR(I_SRC_PROCID))                    
-                  INTO V_NEW_FIELD_DATA
-                  FROM DUAL;                     
-                --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID EXISTED -UPDATED FOR TARGET - FLAG VAL : ' || V_P_PRCID_CNT);
-            END IF;                
-
-            BEGIN
-                SELECT COUNT(*) INTO V_REC_CNT FROM TBL_FORM_DTL WHERE PROCID = I_TGT_PROCID;
-            EXCEPTION
-                WHEN NO_DATA_FOUND THEN
-                    V_REC_CNT := -1;
-            END;
-
-
-            --Copy xml from the source to the target.
-            IF V_REC_CNT > 0 THEN
-            
-                --This is extremly rare case, becuase this process will be called at the beginning of a process.
-                --Update FIELD_DATA with new FIELD_DATA without /formData/history node
-                ----DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'UPDATE FIELD_DATA TO NEW PROCESS');
-                UPDATE HHS_CDC_HR.TBL_FORM_DTL
-                   SET FIELD_DATA = V_NEW_FIELD_DATA
-                       ,MOD_USR = 'update'
-                 WHERE PROCID = I_TGT_PROCID;
-
-            ELSE
-
-                --INSERT Form Data to the target process
-                ----DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'INSERT FIELD_DATA TO NEW PROCESS');
-                INSERT INTO HHS_CDC_HR.TBL_FORM_DTL
-                (
-                    PROCID
-                    , ACTSEQ
-                    , WITEMSEQ
-                    , FORM_TYPE
-                    , FIELD_DATA
-                    , CRT_DT
-                    , CRT_USR
-                )
-                VALUES
-                (
-                    I_TGT_PROCID
-                    , NULL
-                    , NULL
-                    , I_TGT_FORM_TYPE
-                    , V_NEW_FIELD_DATA
-                    , SYSDATE
-                    , V_MOD_USR --The last user who had updated the form data before this Data Copying action
-                );
-
-            END IF;
-
-        END IF;
-
-        -- for respective process definition
-        IF UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT' THEN
-            --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_RECRUITMENT_TBLS V_PROCID=' || I_TGT_PROCID);
-            HHS_CDC_HR.SP_UPDATE_RECRUITMENT_TBLS(I_TGT_PROCID);    
-        -- HHS_MAIN is a temporary name of Classification, it will need to be changed to Classification once the CLA_Main WebMaker's broken application map is fixed.
-        ELSIF UPPER(I_TGT_FORM_TYPE) = 'CLASSIFICATION' OR UPPER(V_FORM_TYPE) = 'HHS_MAIN' THEN
-            --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_CLASSIFICATION_TBLS V_PROCID=' || I_TGT_PROCID);
-            HHS_CDC_HR.SP_UPDATE_CLASSIFICATION_TBLS(I_TGT_PROCID);
-        ELSIF UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT' THEN
-            --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_APPOINTMENT_TBLS V_PROCID=' || I_TGT_PROCID);
-            HHS_CDC_HR.SP_UPDATE_APPOINTMENT_TBLS(I_TGT_PROCID);
-        END IF;
-
-    ELSE
-        --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'V_FIELD_DATA IS NULL');
-        V_NEW_FIELD_DATA := NULL; -- Nothing but place holder
-    END IF;
-
-	COMMIT;
-
-
-EXCEPTION
-	WHEN OTHERS THEN
-        --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'ERROR ' || SUBSTR(SQLERRM, 1, 200));
-        ROLLBACK;
-        SP_ERROR_LOG();
-        COMMIT;
-END;
-
-/
 --------------------------------------------------------
 --  DDL for Procedure SP_ERROR_LOG
 --------------------------------------------------------
 set define off;
 
-  CREATE OR REPLACE PROCEDURE "SP_ERROR_LOG" 
+  CREATE OR REPLACE PROCEDURE "HHS_CDC_HR"."SP_ERROR_LOG" 
 IS
 	PRAGMA AUTONOMOUS_TRANSACTION;
 	V_CODE      PLS_INTEGER := SQLCODE;
@@ -398,10 +165,10 @@ END;
 --------------------------------------------------------
 set define off;
 
-  CREATE OR REPLACE PROCEDURE "SP_UPDATE_APPOINTMENT_TBLS" 
+  CREATE OR REPLACE PROCEDURE "HHS_CDC_HR"."SP_UPDATE_APPOINTMENT_TBLS" 
 (
   I_PROCID IN NUMBER 
-) 
+)
     ------------------------------------------------------------------------------------------
     --  Procedure name	    : 	SP_UPDATE_APPOINTMENT_TBLS
     --	Author				:	Taeho Lee <thee@bizflow.com>
@@ -479,7 +246,7 @@ IS
 	V_POSINFO_CNTRY_OF_CTZNSHP     VARCHAR2(200);
 	V_POSINFO_VISA_ASSSTNC_RQRD    VARCHAR2(200);
 -------- ATC_NATURE_OF_ACTION
-	V_NATROFACTN_NOAC                 VARCHAR2(400);
+	V_NATROFACTN_NOAC              VARCHAR2(10000);
 -------- ATC_PERSONNEL_ACTION
 	V_PACT_EFFCTV_DT            VARCHAR2(20);
 	V_PACT_NTE_DT               VARCHAR2(20);
@@ -927,26 +694,11 @@ BEGIN
       INTO V_NATROFACTN_NOAC
       FROM DUAL;
 
-    IF V_NATROFACTN_NOAC IS NOT NULL THEN
-        --DBMS_OUTPUT.PUT_LINE('INSERT HHS_CDC_HR.ATC_NATURE_OF_ACTION');
-        /*
-        INSERT INTO HHS_CDC_HR.ATC_NATURE_OF_ACTION 
-        (
-            CASE_ID
-            ,SEQ
-            ,NOAC
-            ,FRST_AUTH
-            ,SCND_AUTH
-            ,ZLM_DSCRPTN
-        )        
-        SELECT I_PROCID AS CASE_ID
-                ,substr(V_NATROFACTN_NOAC, 1, instr(V_NATROFACTN_NOAC, '%%', 1, 1)-1) NOAC
-                ,substr(V_NATROFACTN_NOAC, instr(V_NATROFACTN_NOAC, '%%', 1, 1)+2 , instr(V_NATROFACTN_NOAC, '%%', 1, 2) - instr(V_NATROFACTN_NOAC, '%%', 1, 1) - 2) FRST_AUTH
-                ,substr(V_NATROFACTN_NOAC, instr(V_NATROFACTN_NOAC, '%%', 1, 2)+2 , instr(V_NATROFACTN_NOAC, '%%', 1, 3) - instr(V_NATROFACTN_NOAC, '%%', 1, 2) - 2) SCND_AUTH
-                ,substr(V_NATROFACTN_NOAC, instr(V_NATROFACTN_NOAC, '%%', 1, 3)+2) COMP_LEVEL
-         FROM DUAL;
-        */ 
+    V_NATROFACTN_NOAC := replace(replace(V_NATROFACTN_NOAC, '%%%%', '%% %%'), '%%%%', '%% %%');
 
+    IF V_NATROFACTN_NOAC IS NOT NULL THEN
+        
+        --DBMS_OUTPUT.PUT_LINE('INSERT HHS_CDC_HR.ATC_NATURE_OF_ACTION');
         INSERT INTO HHS_CDC_HR.ATC_NATURE_OF_ACTION 
         (
             CASE_ID
@@ -961,16 +713,16 @@ BEGIN
             SELECT I_PROCID AS CASE_ID
                 ,rownum AS SEQ
                 ,substr(NOACitem, 1, instr(NOACitem, '%%', 1, 1)-1) NOAC
-                ,substr(NOACitem, instr(NOACitem, '%%', 1, 1)+2 , instr(NOACitem, '%%', 1, 2) - instr(NOACitem, '%%', 1, 1) - 2) FRST_AUTH
-                ,substr(NOACitem, instr(NOACitem, '%%', 1, 2)+2 , instr(NOACitem, '%%', 1, 3) - instr(NOACitem, '%%', 1, 2) - 2) SCND_AUTH
-                ,substr(NOACitem, instr(NOACitem, '%%', 1, 3)+2) COMP_LEVEL
+                ,TRIM(substr(NOACitem, instr(NOACitem, '%%', 1, 1)+2 , instr(NOACitem, '%%', 1, 2) - instr(NOACitem, '%%', 1, 1) - 2)) FRST_AUTH
+                ,TRIM(substr(NOACitem, instr(NOACitem, '%%', 1, 2)+2 , instr(NOACitem, '%%', 1, 3) - instr(NOACitem, '%%', 1, 2) - 2)) SCND_AUTH
+                ,TRIM(substr(NOACitem, instr(NOACitem, '%%', 1, 3)+2)) REMARKS
             FROM (
                 SELECT 
                         regexp_substr(V_NATROFACTN_NOAC,'[^::]+', 1, level) AS NOACitem from dual
                          connect by regexp_substr(V_NATROFACTN_NOAC, '[^::]+', 1, level) is not null
                 ) MYTBL
         )
-        SELECT ND.CASE_ID, ND.SEQ, ND.NOAC, ND.FRST_AUTH, ND.SCND_AUTH, ND.COMP_LEVEL
+        SELECT ND.CASE_ID, ND.SEQ, ND.NOAC, ND.FRST_AUTH, ND.SCND_AUTH, ND.REMARKS
           FROM NOAC_DETAIL ND
          WHERE ND.CASE_ID = I_PROCID;
                   
@@ -1611,7 +1363,7 @@ END SP_UPDATE_APPOINTMENT_TBLS;
 --------------------------------------------------------
 set define off;
 
-  CREATE OR REPLACE PROCEDURE "SP_UPDATE_CLASSIFICATION_TBLS" 
+  CREATE OR REPLACE PROCEDURE "HHS_CDC_HR"."SP_UPDATE_CLASSIFICATION_TBLS" 
 (
   I_PROCID IN NUMBER 
 ) 
@@ -2527,176 +2279,13 @@ BEGIN
 END SP_UPDATE_CLASSIFICATION_TBLS;
 
 /
---------------------------------------------------------
---  DDL for Procedure SP_UPDATE_FORM_DATA
---------------------------------------------------------
-set define off;
 
-  CREATE OR REPLACE PROCEDURE "SP_UPDATE_FORM_DATA" 
-(
-	IO_ID               IN OUT  NUMBER
-	, I_FORM_TYPE       IN      VARCHAR2
-	, I_FIELD_DATA      IN      CLOB
-	, I_USER            IN      VARCHAR2
-	, I_PROCID          IN      NUMBER
-	, I_ACTSEQ          IN      NUMBER
-	, I_WITEMSEQ        IN      NUMBER
-)
-IS
-	V_ID NUMBER(20);
-	V_FORM_TYPE VARCHAR2(50);
-	V_USER VARCHAR2(50);
-	V_PROCID NUMBER(10);
-	V_ACTSEQ NUMBER(10);
-	V_WITEMSEQ NUMBER(10);
-	V_REC_CNT NUMBER(10);
-	V_MAX_ID NUMBER(20);
-	V_XMLDOC XMLTYPE;
-BEGIN
-
-    --dbms_output.enable(null);
-    
-	V_XMLDOC := XMLTYPE(I_FIELD_DATA);
-
-	IF IO_ID IS NOT NULL AND IO_ID > 0 THEN
-		V_ID := IO_ID;
-	ELSE
-
-		--DBMS_OUTPUT.PUT_LINE('Attempt to find record using PROCID: ' || TO_CHAR(I_PROCID));
-		-- if existing record is found using procid, use that id
-		IF I_PROCID IS NOT NULL AND I_PROCID > 0 THEN
-			BEGIN
-				SELECT ID INTO V_ID FROM TBL_FORM_DTL WHERE PROCID = I_PROCID;
-			EXCEPTION
-				WHEN NO_DATA_FOUND THEN
-					V_ID := -1;
-			END;
-		END IF;
-
-		--DBMS_OUTPUT.PUT_LINE('No record found for PROCID: ' || TO_CHAR(I_PROCID));
-
-		IO_ID := V_ID;
-	END IF;
-
-	--DBMS_OUTPUT.PUT_LINE('ID to be used is determined: ' || TO_CHAR(V_ID));
-
-	IF I_PROCID IS NOT NULL AND I_PROCID > 0 THEN
-		V_PROCID := I_PROCID;
-	ELSE
-		V_PROCID := 0;
-	END IF;
-
-	IF I_ACTSEQ IS NOT NULL AND I_ACTSEQ > 0 THEN
-		V_ACTSEQ := I_ACTSEQ;
-	ELSE
-		V_ACTSEQ := 0;
-	END IF;
-
-	IF I_WITEMSEQ IS NOT NULL AND I_WITEMSEQ > 0 THEN
-		V_WITEMSEQ := I_WITEMSEQ;
-	ELSE
-		V_WITEMSEQ := 0;
-	END IF;
-
-	BEGIN
-		SELECT COUNT(*) INTO V_REC_CNT FROM TBL_FORM_DTL WHERE ID = V_ID;
-	EXCEPTION
-		WHEN NO_DATA_FOUND THEN
-			V_REC_CNT := -1;
-	END;
-
-	V_FORM_TYPE := I_FORM_TYPE;
-	V_USER := I_USER;
-
-	--DBMS_OUTPUT.PUT_LINE('Inspected existence of same record.');
-	--DBMS_OUTPUT.PUT_LINE('    V_ID       = ' || TO_CHAR(V_ID));
-	--DBMS_OUTPUT.PUT_LINE('    V_PROCID   = ' || TO_CHAR(V_PROCID));
-	--DBMS_OUTPUT.PUT_LINE('    V_ACTSEQ   = ' || TO_CHAR(V_ACTSEQ));
-	--DBMS_OUTPUT.PUT_LINE('    V_WITEMSEQ = ' || TO_CHAR(V_WITEMSEQ));
-	--DBMS_OUTPUT.PUT_LINE('    V_REC_CNT  = ' || TO_CHAR(V_REC_CNT));
-
-/*
-	-- Strategic Consultation specific xml data manipulation before insert/update
-	IF V_FORM_TYPE = 'CMSSTRATCON' THEN
-		SP_UPDATE_STRATCON_DATA( V_XMLDOC );
-	END IF;
-*/
-	IF V_REC_CNT > 0 THEN
-		--DBMS_OUTPUT.PUT_LINE('Record found so that field data will be updated on the same record.');
-
-		UPDATE TBL_FORM_DTL
-		SET
-			PROCID = V_PROCID
-			, ACTSEQ = V_ACTSEQ
-			, WITEMSEQ = V_WITEMSEQ
-            , FORM_TYPE = V_FORM_TYPE
-			, FIELD_DATA = V_XMLDOC
-			, MOD_DT = SYSDATE
-			, MOD_USR = V_USER
-		WHERE ID = V_ID
-		;
-
-	ELSE
-		--DBMS_OUTPUT.PUT_LINE('No record found so that new record will be inserted.');
-
-		INSERT INTO TBL_FORM_DTL
-		(
---			ID
---			, PROCID
-			PROCID
-			, ACTSEQ
-			, WITEMSEQ
-			, FORM_TYPE
-			, FIELD_DATA
-			, CRT_DT
-			, CRT_USR
-		)
-		VALUES
-		(
---			V_ID
---			, V_PROCID
-			V_PROCID
-			, V_ACTSEQ
-			, V_WITEMSEQ
-			, V_FORM_TYPE
-			, V_XMLDOC
-			, SYSDATE
-			, V_USER
-		)
-		;
-	END IF;
-
-	-- Update process variable and transition xml into individual tables
-	-- for respective process definition
-	IF UPPER(V_FORM_TYPE) = 'RECRUITMENT' THEN
-        --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_RECRUITMENT_TBLS V_PROCID=' || V_PROCID);
-        HHS_CDC_HR.SP_UPDATE_RECRUITMENT_TBLS(V_PROCID);    
-    -- HHS_MAIN is a temporary name of Classification, it will need to be changed to Classification once the CLA_Main WebMaker's broken application map is fixed.
-	ELSIF UPPER(V_FORM_TYPE) = 'CLASSIFICATION' or UPPER(V_FORM_TYPE) = 'HHS_MAIN' THEN
-        --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_CLASSIFICATION_TBLS V_PROCID=' || V_PROCID);
-        HHS_CDC_HR.SP_UPDATE_CLASSIFICATION_TBLS(V_PROCID);        
-	ELSIF UPPER(V_FORM_TYPE) = 'APPOINTMENT' THEN
-		--DBMS_OUTPUT.PUT_LINE('SP_UPDATE_APPOINTMENT_TBLS V_PROCID=' || V_PROCID);
-        HHS_CDC_HR.SP_UPDATE_APPOINTMENT_TBLS(V_PROCID);
-    ELSE
-        DBMS_OUTPUT.PUT_LINE('SP_UPDATE_###_TBLS V_PROCID=' || V_PROCID);
-	END IF;
-
-	COMMIT;
-
-EXCEPTION
-	WHEN OTHERS THEN
-		SP_ERROR_LOG();
-		--DBMS_OUTPUT.PUT_LINE('Error occurred while executing SP_UPDATE_FORM_DATA -------------------');
-END;
-
-/
 --------------------------------------------------------
 --  DDL for Procedure SP_UPDATE_RECRUITMENT_TBLS
 --------------------------------------------------------
 set define off;
 
-  CREATE OR REPLACE PROCEDURE "SP_UPDATE_RECRUITMENT_TBLS" 
+  CREATE OR REPLACE PROCEDURE "HHS_CDC_HR"."SP_UPDATE_RECRUITMENT_TBLS" 
 (
   I_PROCID IN NUMBER 
 ) 
@@ -3822,5 +3411,403 @@ BEGIN
     END IF;      
     
 END SP_UPDATE_RECRUITMENT_TBLS;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure SP_DATACOPY_FORM_DATA
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "HHS_CDC_HR"."SP_DATACOPY_FORM_DATA" 
+(
+	I_SRC_PROCID      IN NUMBER
+    , I_SRC_FORM_TYPE   IN VARCHAR2
+    , I_TGT_PROCID      IN NUMBER
+	, I_TGT_FORM_TYPE   IN VARCHAR2
+)
+    ------------------------------------------------------------------------------------------
+    --  Procedure name	    : 	SP_DATACOPY_FORM_DATA
+    --	Author				:	Taeho Lee <thee@bizflow.com>
+    --	Copyright			:	BizFlow Corp.	
+    --	
+    --	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
+    --	Purpose				:	Data Copy between BizFlow processes
+    --	
+    --  Example
+    --  To use in SQL statements:
+    --
+    -- 	WHEN		WHO			WHAT		
+    -- 	-----------	--------	-------------------------------------------------------
+    -- 	03/29/2018	THLEE		Created
+    -- 	04/20/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'POS_ORG_TITLE' with 'POS_FUNCTIONAL_TITLE'
+    -- 	05/03/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'JOB_REC_POS_NUM' with 'POS_JOB_REQ_NUM'
+    -- 	05/03/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'PRE_EMPLOYMENT_PHYSICAL_REQUIRED' with 'PRE_EMP_PHYSICAL_REQUIRED'    
+    -- 	06/19/2018	SGURUNG		Added code to have the Appointment WF use PROCID from its parent WF as its Parent Process ID
+    ------------------------------------------------------------------------------------------
+
+IS
+
+	V_ID NUMBER(20);
+
+	V_USER VARCHAR2(50);
+	V_PROCID NUMBER(10);
+	V_ACTSEQ NUMBER(10);
+    V_WITEMSEQ NUMBER(10);
+    V_FORM_TYPE VARCHAR2(50);
+    V_FIELD_DATA XMLTYPE;
+
+    V_CRT_DT TIMESTAMP(6);
+    V_CRT_USR VARCHAR2(50);
+    V_MOD_DT TIMESTAMP(6);
+    V_MOD_USR VARCHAR2(50);
+
+    V_NEW_FIELD_DATA XMLTYPE;
+    V_REC_CNT number(10);
+    V_P_PRCID_CNT number(10);
+
+BEGIN
+
+    --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'SP_DATACOPY_FORM_DATA IS CALLED');
+    --GET Form Data XML document from the source process
+    BEGIN
+        --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'Getting FIELD_DATA');
+        SELECT PROCID, ACTSEQ, WITEMSEQ, FORM_TYPE, FIELD_DATA, CRT_DT, CRT_USR, MOD_DT, MOD_USR
+          INTO V_PROCID, V_ACTSEQ, V_WITEMSEQ, V_FORM_TYPE, V_FIELD_DATA, V_CRT_DT, V_CRT_USR, V_MOD_DT, V_MOD_USR 
+          FROM HHS_CDC_HR.TBL_FORM_DTL
+        WHERE PROCID = I_SRC_PROCID;
+
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'NO FIELD_DATA FOUND');
+            V_NEW_FIELD_DATA := NULL; -- Nothing but place holder
+        WHEN OTHERS THEN
+            --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'ERROR ' || SUBSTR(SQLERRM, 1, 200));
+            V_NEW_FIELD_DATA := NULL; -- Nothing but place holder
+    END;
+
+    BEGIN
+        SELECT COUNT(*) INTO V_P_PRCID_CNT FROM TBL_FORM_DTL WHERE PROCID = I_SRC_PROCID
+          AND EXISTSNODE(field_data, '/formData/items/item[id="PARENT_PROCESS_ID"]') = 1 ;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            V_P_PRCID_CNT := -1;
+    END;
+
+    IF V_FIELD_DATA IS NOT NULL THEN
+
+        V_NEW_FIELD_DATA := NULL;
+
+        --Common Seciton
+        --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'Removing history node from FIELD_DATA');
+        SELECT DELETEXML(V_FIELD_DATA, '/formData/history')
+          INTO V_NEW_FIELD_DATA
+          FROM DUAL;
+
+        IF V_NEW_FIELD_DATA IS NULL THEN
+            V_NEW_FIELD_DATA := NULL; -- Nothing but place holder
+            --DBMS_OUTPUT.PUT_LINE('[DEBUG] V_NEW_FIELD_DATA IS NULL');
+        ELSE
+            --DBMS_OUTPUT.PUT_LINE('[DEBUG] V_NEW_FIELD_DATA=' || V_NEW_FIELD_DATA.getStringVal());
+
+            --Pre-processing: add, delete, move elements from source xml before copying it to target process.
+            IF ((UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
+               OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')
+               OR (UPPER(I_SRC_FORM_TYPE) = 'RECRUITMENT' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
+
+                SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''genInitComplete'']')
+                  INTO V_NEW_FIELD_DATA
+                  FROM DUAL;
+
+                SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''posInitComplete'']')
+                  INTO V_NEW_FIELD_DATA
+                  FROM DUAL;
+
+                SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''claInitComplete'']')
+                  INTO V_NEW_FIELD_DATA
+                  FROM DUAL;
+
+                SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''concInitComplete'']')
+                  INTO V_NEW_FIELD_DATA
+                  FROM DUAL;
+
+                -- Special handling for different name in between Classification and Recruitment.
+                IF ((UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
+                    OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
+                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="POS_ORG_TITLE"]/id/text()', 'POS_FUNCTIONAL_TITLE')                    
+                      INTO V_NEW_FIELD_DATA
+                      FROM DUAL; 
+    
+                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="JOB_REC_POS_NUM"]/id/text()', 'POS_JOB_REQ_NUM')                    
+                      INTO V_NEW_FIELD_DATA
+                      FROM DUAL;
+                      
+                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PRE_EMPLOYMENT_PHYSICAL_REQUIRED"]/id/text()', 'PRE_EMP_PHYSICAL_REQUIRED')                    
+                      INTO V_NEW_FIELD_DATA
+                      FROM DUAL; 
+                    
+                    --parent's parent will become GRAND_PARENT
+                    SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PARENT_PROCESS_ID"]/id/text()', 'GRAND_PARENT_PROCESS_ID')                    
+                      INTO V_NEW_FIELD_DATA
+                      FROM DUAL;                       
+                END IF;
+                
+            END IF;
+ 
+            --Set parent process id
+            IF V_P_PRCID_CNT < 1 THEN
+                SELECT INSERTCHILDXML(V_NEW_FIELD_DATA
+                        , '/formData/items'
+                        , 'item'
+                        , XMLTYPE('<item><id>PARENT_PROCESS_ID</id><etype>textbox</etype><value>' || TO_CHAR(I_SRC_PROCID) || '</value></item>'))
+                  INTO V_NEW_FIELD_DATA
+                  FROM DUAL;
+                --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID DID NOT EXIST - INSERTED IT INTO TARGET - FLAG VAL : ' || V_P_PRCID_CNT);                
+            ELSE
+                SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PARENT_PROCESS_ID"]/value/text()', TO_CHAR(I_SRC_PROCID))                    
+                  INTO V_NEW_FIELD_DATA
+                  FROM DUAL;                     
+                --DBMS_OUTPUT.PUT_LINE('PARENT PROC ID EXISTED -UPDATED FOR TARGET - FLAG VAL : ' || V_P_PRCID_CNT);
+            END IF;                
+
+            BEGIN
+                SELECT COUNT(*) INTO V_REC_CNT FROM TBL_FORM_DTL WHERE PROCID = I_TGT_PROCID;
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                    V_REC_CNT := -1;
+            END;
+
+
+            --Copy xml from the source to the target.
+            IF V_REC_CNT > 0 THEN
+            
+                --This is extremly rare case, becuase this process will be called at the beginning of a process.
+                --Update FIELD_DATA with new FIELD_DATA without /formData/history node
+                ----DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'UPDATE FIELD_DATA TO NEW PROCESS');
+                UPDATE HHS_CDC_HR.TBL_FORM_DTL
+                   SET FIELD_DATA = V_NEW_FIELD_DATA
+                       ,MOD_USR = 'update'
+                 WHERE PROCID = I_TGT_PROCID;
+
+            ELSE
+
+                --INSERT Form Data to the target process
+                ----DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'INSERT FIELD_DATA TO NEW PROCESS');
+                INSERT INTO HHS_CDC_HR.TBL_FORM_DTL
+                (
+                    PROCID
+                    , ACTSEQ
+                    , WITEMSEQ
+                    , FORM_TYPE
+                    , FIELD_DATA
+                    , CRT_DT
+                    , CRT_USR
+                )
+                VALUES
+                (
+                    I_TGT_PROCID
+                    , NULL
+                    , NULL
+                    , I_TGT_FORM_TYPE
+                    , V_NEW_FIELD_DATA
+                    , SYSDATE
+                    , V_MOD_USR --The last user who had updated the form data before this Data Copying action
+                );
+
+            END IF;
+
+        END IF;
+
+        -- for respective process definition
+        IF UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT' THEN
+            --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_RECRUITMENT_TBLS V_PROCID=' || I_TGT_PROCID);
+            HHS_CDC_HR.SP_UPDATE_RECRUITMENT_TBLS(I_TGT_PROCID);    
+        -- HHS_MAIN is a temporary name of Classification, it will need to be changed to Classification once the CLA_Main WebMaker's broken application map is fixed.
+        ELSIF UPPER(I_TGT_FORM_TYPE) = 'CLASSIFICATION' OR UPPER(V_FORM_TYPE) = 'HHS_MAIN' THEN
+            --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_CLASSIFICATION_TBLS V_PROCID=' || I_TGT_PROCID);
+            HHS_CDC_HR.SP_UPDATE_CLASSIFICATION_TBLS(I_TGT_PROCID);
+        ELSIF UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT' THEN
+            --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_APPOINTMENT_TBLS V_PROCID=' || I_TGT_PROCID);
+            HHS_CDC_HR.SP_UPDATE_APPOINTMENT_TBLS(I_TGT_PROCID);
+        END IF;
+
+    ELSE
+        --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'V_FIELD_DATA IS NULL');
+        V_NEW_FIELD_DATA := NULL; -- Nothing but place holder
+    END IF;
+
+	COMMIT;
+
+
+EXCEPTION
+	WHEN OTHERS THEN
+        --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'ERROR ' || SUBSTR(SQLERRM, 1, 200));
+        ROLLBACK;
+        SP_ERROR_LOG();
+        COMMIT;
+END;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure SP_UPDATE_FORM_DATA
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "HHS_CDC_HR"."SP_UPDATE_FORM_DATA" 
+(
+	IO_ID               IN OUT  NUMBER
+	, I_FORM_TYPE       IN      VARCHAR2
+	, I_FIELD_DATA      IN      CLOB
+	, I_USER            IN      VARCHAR2
+	, I_PROCID          IN      NUMBER
+	, I_ACTSEQ          IN      NUMBER
+	, I_WITEMSEQ        IN      NUMBER
+)
+IS
+	V_ID NUMBER(20);
+	V_FORM_TYPE VARCHAR2(50);
+	V_USER VARCHAR2(50);
+	V_PROCID NUMBER(10);
+	V_ACTSEQ NUMBER(10);
+	V_WITEMSEQ NUMBER(10);
+	V_REC_CNT NUMBER(10);
+	V_MAX_ID NUMBER(20);
+	V_XMLDOC XMLTYPE;
+BEGIN
+
+    --dbms_output.enable(null);
+    
+	V_XMLDOC := XMLTYPE(I_FIELD_DATA);
+
+	IF IO_ID IS NOT NULL AND IO_ID > 0 THEN
+		V_ID := IO_ID;
+	ELSE
+
+		--DBMS_OUTPUT.PUT_LINE('Attempt to find record using PROCID: ' || TO_CHAR(I_PROCID));
+		-- if existing record is found using procid, use that id
+		IF I_PROCID IS NOT NULL AND I_PROCID > 0 THEN
+			BEGIN
+				SELECT ID INTO V_ID FROM TBL_FORM_DTL WHERE PROCID = I_PROCID;
+			EXCEPTION
+				WHEN NO_DATA_FOUND THEN
+					V_ID := -1;
+			END;
+		END IF;
+
+		--DBMS_OUTPUT.PUT_LINE('No record found for PROCID: ' || TO_CHAR(I_PROCID));
+
+		IO_ID := V_ID;
+	END IF;
+
+	--DBMS_OUTPUT.PUT_LINE('ID to be used is determined: ' || TO_CHAR(V_ID));
+
+	IF I_PROCID IS NOT NULL AND I_PROCID > 0 THEN
+		V_PROCID := I_PROCID;
+	ELSE
+		V_PROCID := 0;
+	END IF;
+
+	IF I_ACTSEQ IS NOT NULL AND I_ACTSEQ > 0 THEN
+		V_ACTSEQ := I_ACTSEQ;
+	ELSE
+		V_ACTSEQ := 0;
+	END IF;
+
+	IF I_WITEMSEQ IS NOT NULL AND I_WITEMSEQ > 0 THEN
+		V_WITEMSEQ := I_WITEMSEQ;
+	ELSE
+		V_WITEMSEQ := 0;
+	END IF;
+
+	BEGIN
+		SELECT COUNT(*) INTO V_REC_CNT FROM TBL_FORM_DTL WHERE ID = V_ID;
+	EXCEPTION
+		WHEN NO_DATA_FOUND THEN
+			V_REC_CNT := -1;
+	END;
+
+	V_FORM_TYPE := I_FORM_TYPE;
+	V_USER := I_USER;
+
+	--DBMS_OUTPUT.PUT_LINE('Inspected existence of same record.');
+	--DBMS_OUTPUT.PUT_LINE('    V_ID       = ' || TO_CHAR(V_ID));
+	--DBMS_OUTPUT.PUT_LINE('    V_PROCID   = ' || TO_CHAR(V_PROCID));
+	--DBMS_OUTPUT.PUT_LINE('    V_ACTSEQ   = ' || TO_CHAR(V_ACTSEQ));
+	--DBMS_OUTPUT.PUT_LINE('    V_WITEMSEQ = ' || TO_CHAR(V_WITEMSEQ));
+	--DBMS_OUTPUT.PUT_LINE('    V_REC_CNT  = ' || TO_CHAR(V_REC_CNT));
+
+/*
+	-- Strategic Consultation specific xml data manipulation before insert/update
+	IF V_FORM_TYPE = 'CMSSTRATCON' THEN
+		SP_UPDATE_STRATCON_DATA( V_XMLDOC );
+	END IF;
+*/
+	IF V_REC_CNT > 0 THEN
+		--DBMS_OUTPUT.PUT_LINE('Record found so that field data will be updated on the same record.');
+
+		UPDATE TBL_FORM_DTL
+		SET
+			PROCID = V_PROCID
+			, ACTSEQ = V_ACTSEQ
+			, WITEMSEQ = V_WITEMSEQ
+            , FORM_TYPE = V_FORM_TYPE
+			, FIELD_DATA = V_XMLDOC
+			, MOD_DT = SYSDATE
+			, MOD_USR = V_USER
+		WHERE ID = V_ID
+		;
+
+	ELSE
+		--DBMS_OUTPUT.PUT_LINE('No record found so that new record will be inserted.');
+
+		INSERT INTO TBL_FORM_DTL
+		(
+--			ID
+--			, PROCID
+			PROCID
+			, ACTSEQ
+			, WITEMSEQ
+			, FORM_TYPE
+			, FIELD_DATA
+			, CRT_DT
+			, CRT_USR
+		)
+		VALUES
+		(
+--			V_ID
+--			, V_PROCID
+			V_PROCID
+			, V_ACTSEQ
+			, V_WITEMSEQ
+			, V_FORM_TYPE
+			, V_XMLDOC
+			, SYSDATE
+			, V_USER
+		)
+		;
+	END IF;
+
+	-- Update process variable and transition xml into individual tables
+	-- for respective process definition
+	IF UPPER(V_FORM_TYPE) = 'RECRUITMENT' THEN
+        --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_RECRUITMENT_TBLS V_PROCID=' || V_PROCID);
+        HHS_CDC_HR.SP_UPDATE_RECRUITMENT_TBLS(V_PROCID);    
+    -- HHS_MAIN is a temporary name of Classification, it will need to be changed to Classification once the CLA_Main WebMaker's broken application map is fixed.
+	ELSIF UPPER(V_FORM_TYPE) = 'CLASSIFICATION' or UPPER(V_FORM_TYPE) = 'HHS_MAIN' THEN
+        --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_CLASSIFICATION_TBLS V_PROCID=' || V_PROCID);
+        HHS_CDC_HR.SP_UPDATE_CLASSIFICATION_TBLS(V_PROCID);        
+	ELSIF UPPER(V_FORM_TYPE) = 'APPOINTMENT' THEN
+		--DBMS_OUTPUT.PUT_LINE('SP_UPDATE_APPOINTMENT_TBLS V_PROCID=' || V_PROCID);
+        HHS_CDC_HR.SP_UPDATE_APPOINTMENT_TBLS(V_PROCID);
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('SP_UPDATE_###_TBLS V_PROCID=' || V_PROCID);
+	END IF;
+
+	COMMIT;
+
+EXCEPTION
+	WHEN OTHERS THEN
+		SP_ERROR_LOG();
+		--DBMS_OUTPUT.PUT_LINE('Error occurred while executing SP_UPDATE_FORM_DATA -------------------');
+END;
 
 /
