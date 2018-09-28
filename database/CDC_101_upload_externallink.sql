@@ -1,6 +1,7 @@
 --------------------------------------------------------
 --  File created - Friday-September-28-2018   
 --------------------------------------------------------
+truncate table HHS_CDC_HR.EXTERNAL_LINK_LOOKUP;
 SET DEFINE OFF;
 Insert into HHS_CDC_HR.EXTERNAL_LINK_LOOKUP (LINK_ID,LINK_GROUP,LINK_URL,LINK_DISPLAY,LINK_DESCRIPTION,LINK_ACTIVE,LINK_EFFECTIVE_DT,LINK_EXPIRATION_DT,LINK_DISP_ORDER) values (6,'TITLE5_RESOURCES_CLASSIFICATIONONLY','https://www.opm.gov/policy-data-oversight/classification-qualifications/classifying-general-schedule-positions/#url=Overview','OPM Classification Standards','The Standards provide general information used in determining the occupational series, title, grade, and pay system for positions performing white collar work in the Federal Government.','1',null,null,6);
 Insert into HHS_CDC_HR.EXTERNAL_LINK_LOOKUP (LINK_ID,LINK_GROUP,LINK_URL,LINK_DISPLAY,LINK_DESCRIPTION,LINK_ACTIVE,LINK_EFFECTIVE_DT,LINK_EXPIRATION_DT,LINK_DISP_ORDER) values (2,'COMMON_RESOURCES','http://pbms.cdc.gov','Position-Based Management System (PBMS)','PBMS provides information to CDC''s Integrated Resources Information System (IRIS) Staffing for budget planning purposes and also supports CDC''s Enterprise Hiring Plan.','1',null,null,2);
