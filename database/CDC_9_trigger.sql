@@ -1,10 +1,10 @@
 --------------------------------------------------------
---  File created - Friday-August-31-2018   
+--  File created - Tuesday-September-11-2018   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Trigger ERROR_LOG_BIR
 --------------------------------------------------------
-
+/*
   CREATE OR REPLACE TRIGGER "HHS_CDC_HR"."ERROR_LOG_BIR" 
 BEFORE INSERT ON ERROR_LOG
 FOR EACH ROW
@@ -162,3 +162,4 @@ END
 ;
 /
 ALTER TRIGGER "HHS_CDC_HR"."TBL_FORM_DTL_BIR" ENABLE;
+*/

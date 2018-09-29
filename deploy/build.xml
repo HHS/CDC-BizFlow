@@ -6,13 +6,13 @@
 
 	<property name="proj.root.dir" value="${basedir}" />
 	<property name="webserver.dir" value="C:\Program Files\Apache Software Foundation" />
-	<property name="src.web.bizflow.dir" value="${webserver.dir}/Tomcat 7.0_BizFlow/webapps/bizflow" />
-	<property name="src.wmruntime.dir" value="${webserver.dir}/Tomcat 7.0_BizFlowWM/webapps/bizflowwebmaker" />
+	<property name="src.web.bizflow.dir" value="${webserver.dir}/webapps/bizflow" />
+	<property name="src.wmruntime.dir" value="${webserver.dir}/webapps/bizflowwebmaker" />
 	<property name="deploy.dir" value="${proj.root.dir}/deployment" />
 	<property name="deploy.runtime.dir" value="${deploy.dir}/ui/runtime" />
 	<property name="deploy.conf.dir" value="${deploy.runtime.dir}/configuration" />
 	<property name="deploy.webapps.dir" value="${deploy.runtime.dir}/webapps" />
-	<property name="token.bf.base.url" value="http://cdc.bizflow.com" />
+	<property name="token.bf.base.url" value="http://localhost:8080" />
 	<property name="replace.bf.url.dev" value="http://localhost:8080" />
 	<property name="replace.bf.url.qa" value="http://localhost:9080" />
 	<property name="replace.bf.url.trn" value="http://localhost:8080" />
@@ -23,23 +23,10 @@
 
 	<!-- patters for WebMaker runtime files to be captured, excluding config files -->
 	<patternset id="wm.proj.include.noconf">
-		<include name="apt_main/**" />
-		<include name="cdc_api/**" />
-		<include name="cla_classification/**" />
-		<include name="cla_concurrence/**" />
-		<include name="cla_general/**" />
-		<include name="cla_main/**" />
-		<include name="cla_position/**" />
-		<include name="cla_resources/**" />
-		<include name="p2w_common/**" />
-		<include name="p2w_conditions/**" />
-		<include name="p2w_general/**" />
-		<include name="p2w_main/**" />
-		<include name="p2w_position/**" />
-		<include name="p2w_resources/**" />
-		<include name="p2w_vacancy/**" />
-		<include name="p2w_validation/**" />
-
+		<include name="apt_*/**" />
+		<include name="cdc_*/**" />
+		<include name="cla_*/**" />
+		<include name="p2w_*/**" />
 		<exclude name="**/morphyc.xml" />
 		<exclude name="**/*log.txt" />
 		<exclude name="**/*log.txt.**" />
@@ -47,22 +34,10 @@
 
 	<!-- patters for WebMaker runtime config files to be captured -->
 	<patternset id="wm.proj.include.conf">
-		<include name="apt_main/doc/morphyc.xml" />
-		<include name="cdc_api/doc/morphyc.xml" />
-		<include name="cla_classification/doc/morphyc.xml" />
-		<include name="cla_concurrence/doc/morphyc.xml" />
-		<include name="cla_general/doc/morphyc.xml" />
-		<include name="cla_main/doc/morphyc.xml" />
-		<include name="cla_position/doc/morphyc.xml" />
-		<include name="cla_resources/doc/morphyc.xml" />
-		<include name="p2w_common/doc/morphyc.xml" />
-		<include name="p2w_conditions/doc/morphyc.xml" />
-		<include name="p2w_general/doc/morphyc.xml" />
-		<include name="p2w_main/doc/morphyc.xml" />
-		<include name="p2w_position/doc/morphyc.xml" />
-		<include name="p2w_resources/doc/morphyc.xml" />
-		<include name="p2w_vacancy/doc/morphyc.xml" />
-		<include name="p2w_validation/doc/morphyc.xml" />
+		<include name="apt_*/doc/morphyc.xml" />
+		<include name="cdc_*/doc/morphyc.xml" />
+		<include name="cla_*/doc/morphyc.xml" />
+		<include name="p2w_*/doc/morphyc.xml" />
 	</patternset>
 
 	<!-- patters for web application files for blastcache -->
@@ -70,9 +45,6 @@
 		<include name="**/views/view/Page_Painter/BizFlowEntry.xsl" />
 		<include name="**/views/view/Page_Painter/NewForm.xsl" />
 		<include name="**/views/view/Page_Painter/SaveTabContentsForm.xsl" />
-		<include name="apt_main/doc/morphyc.xml" />
-		<include name="cla_main/doc/morphyc.xml" />
-		<include name="p2w_main/doc/morphyc.xml" />
 	</patternset>
 
 	<target name="init">
@@ -233,7 +205,7 @@
 		<tstamp>
 			<format property="ziptime" pattern="yyyyMMdd_HHmmss" />
 		</tstamp>
-		<zip destfile="${deploy.runtime.dir}/../cdc_runtime_${ziptime}.zip"
+		<zip destfile="${deploy.runtime.dir}/../runtime_cdc_${ziptime}.zip"
 				basedir="${deploy.runtime.dir}/.."
 				includes="runtime/**" />
 	</target>
