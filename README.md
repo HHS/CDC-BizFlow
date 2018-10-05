@@ -62,6 +62,7 @@ Source Repository: *https://github.com/HHS/CDC-BizFlow* This repository includes
 13. Review the log to see if any error exists.
 14. Check if an export file created in the folder.
 
+
 #### Export BizFlow Reports
 1. Go to Development Server to export reports
 2. Go to buildomatic directory
@@ -69,7 +70,7 @@ Source Repository: *https://github.com/HHS/CDC-BizFlow* This repository includes
 3. Create a "export" folder if not exists.
 > ex) C:\Program Files (x86)\BizFlowReporting\buildomatic\export
 4. Export reports with command below
-> js-export --output-zip ./export/CDCReports.zip --uris /organizations/organization_1/reports/CDC/CDC_Approval_to_Commit,/organizations/organization_1/reports/CDC/CDC_OF8,/organizations/organization_1/reports/CDC/CDC_OF8_All_Grades,/organizations/organization_1/reports/CDC/CDC_Pre_Recruitment_Consultation_report,/organizations/organization_1/Images/CDC/CDC_Logo.jpg,/organizations/organization_1/Images/CDC/Checkbox_No.png,/organizations/organization_1/Images/CDC/Checkbox_Yes.png
+> js-export --output-zip ./export/CDCReports.zip --uris /organizations/organization_1/reports/CDC/CDC_Approval_to_Commit,/organizations/organization_1/reports/CDC/CDC_OF8,/organizations/organization_1/reports/CDC/CDC_OF8_All_Grades,/organizations/organization_1/reports/CDC/CDC_Pre_Recruitment_Consultation_report,/organizations/organization_1/Images/CDC/CDC_Logo.jpg,/organizations/organization_1/Images/CDC/Checkbox_No.png,/organizations/organization_1/Images/CDC/Checkbox_Yes.png,/organizations/organization_1/Images/CDC/HHS_Logo.png
 5. Capture the generated export zip file.
 
 
@@ -79,6 +80,7 @@ UI modules are captured from DEV environment's web application directory, using 
 
 The ANT build file will package the UI modules in a zip file. Especially for WebMaker runtime files, the script will capture configuration files separately per environment, which will be deployed to the target environment appropriately by the deployment script later on. The script also appends timestamp to the JavaScript and CSS file references in the web application files so that the web browser cache is forced to be refreshed at the first time loading after the new deployment.
 
+
 ### Pre-requisite on DEV Server:
 -   JDK/JRE 1.7
 -   Apache Ant 1.9.x or later
@@ -87,6 +89,7 @@ The ANT build file will package the UI modules in a zip file. Especially for Web
     -   WebMaker form runtime files
     -   bizflowrule.war file
     -   BizFlow solutions files
+
 
 ### Packaging Steps
 
