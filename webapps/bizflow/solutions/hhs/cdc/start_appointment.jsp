@@ -15,6 +15,7 @@
 <bf:parameter id="processid" name="processid" value="" valuePattern="NoRiskyValue"/><%--madatory--%>
 <bf:parameter id="jrno" name="jrno" value="" valuePattern="NoRiskyValue"/><%--madatory--%>
 <bf:parameter id="certno" name="certno" value="" valuePattern="NoRiskyValue"/><%--madatory--%>
+<bf:parameter id="applicantname" name="applicantname" value="" valuePattern="NoRiskyValue"/><%--madatory--%>
 
 <%@ include file="./sslinit.jsp" %>
 
@@ -151,7 +152,10 @@
                             , HWComments parentProcessComments
                             , HWProcessVariables parentProcessVariables
                             , HWAttachments parentProcessAttachments
-                            , String startActivityName) throws HWException, Exception {
+                            , String startActivityName
+                            , String jrno
+                            , String certno
+                            , String applicantname) throws HWException, Exception {
 
 	    if (appointmentProcessDefinition == null)
             throw new Exception("startProcess:: Missing Process Definition Info");
@@ -197,6 +201,24 @@
                 }
             }
         }
+
+        HWProcessVariable hwProcessVariable = hwProcessVariables.add();
+        hwProcessVariable.setValueType(HWConstant.RELDATATYPE_STRING);
+        hwProcessVariable.setScope(HWConstant.RELDATASCOPE_INSTANCE);
+        hwProcessVariable.setName("usas_JRNo");
+        hwProcessVariable.setValue(jrno);
+
+        hwProcessVariable = hwProcessVariables.add();
+        hwProcessVariable.setValueType(HWConstant.RELDATATYPE_STRING);
+        hwProcessVariable.setScope(HWConstant.RELDATASCOPE_INSTANCE);
+        hwProcessVariable.setName("usas_CertNo");
+        hwProcessVariable.setValue(certno);
+
+        hwProcessVariable = hwProcessVariables.add();
+        hwProcessVariable.setValueType(HWConstant.RELDATATYPE_STRING);
+        hwProcessVariable.setScope(HWConstant.RELDATASCOPE_INSTANCE);
+        hwProcessVariable.setName("usas_ApplicantName");
+        hwProcessVariable.setValue(applicantname);
 
         HWAttachments hwAttachments = new HWAttachmentsImpl();
         if (parentProcessAttachments != null && parentProcessAttachments.getCount() > 0) {
@@ -328,7 +350,7 @@
         System.out.println("\tProcess Definition =" + hwProdDef.toString());
 
         System.out.println("Start a new Appointment Process------------------------------");
-        hwWorkitem = startProcess(hwSessionInfo, hwProdDef, hwProcess, hwComments, hwProcVars, hwAttchs, startActivityName); //( hwProdDef,  hwProcess,  hwComments,  hwProcVars,  hwAttchs, params);
+        hwWorkitem = startProcess(hwSessionInfo, hwProdDef, hwProcess, hwComments, hwProcVars, hwAttchs, startActivityName, jrno, certno, applicantname); //( hwProdDef,  hwProcess,  hwComments,  hwProcVars,  hwAttchs, params);
 
     }
     catch (com.hs.bf.web.beans.HWException e)
