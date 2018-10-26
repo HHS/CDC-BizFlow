@@ -21,7 +21,25 @@ WHERE LINK_ID = 15;
 commit;
 /
 
+DELETE 
+FROM HHS_CDC_HR.TBL_LOOKUP
+where TBL_LTYPE in
+(
+'DutyStation',
+'AppointmentType',
+'CyberSecurityCode',
+'PayPlan',
+'Series'
+)
+;
+--DROP VIEW HHS_CDC_HR.ADMIN_CODES;
 
+--DROP TABLE HHS_CDC_HR.ADMINISTRATIVE_CODE;
+
+COMMIT;
+/
+
+/*
 --Table for CapHR Integration. This table will be used to check if a case has been initiated already.
 CREATE TABLE CAPHR_INTERFACE_LOG
 (
@@ -72,5 +90,5 @@ GRANT SELECT ON HHS_CDC_HR.CAPHR_INTERFACE_LOG TO HHS_CDC_HR_RW_ROLE;
 GRANT SELECT ON HHS_CDC_HR.CAPHR_INTERFACE_LOG TO HHS_CDC_HR_DEV_ROLE;
 /
 
-
+*/
 
