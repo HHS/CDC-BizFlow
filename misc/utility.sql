@@ -15,8 +15,6 @@ WHERE PROCID = 26153
 AND RLVNTDATANAME NOT IN ('procId', 'wihmode', 'cdcEmailDisclaimer', 'adminEmailAddress')
 ORDER BY RLVNTDATANAME;
 
-
-
 --Generate process variable XML elements
 SELECT '<' || RLVNTDATADEFNAME || ' />' AS ProcessVariable
 FROM BizFlow.RLVNTDATADEF
@@ -26,7 +24,7 @@ WHERE PROCDEFID = (SELECT PROCDEFID
         AND ENVTYPE = 'O'
         AND NAME = 'Triage'
         )
-AND RLVNTDATADEFNAME != 'wihmode'
+AND RLVNTDATADEFNAME not in ( 'wihmode', 'nullString' )
 ORDER BY RLVNTDATADEFNAME
 ;
         
