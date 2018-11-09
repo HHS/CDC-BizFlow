@@ -1939,7 +1939,7 @@ rule "Classification / Rule HiringMethod = Title 5, SubmissionReason = Realignme
     then
         System.out.println("RULE C31>> " + $docSearch);
         addDocument($workflowDocuments, "Realignment Spreadsheet", true);
-        addDocument($workflowDocuments, "Reorganization Aproval Letter", false);        
+        addDocument($workflowDocuments, "Reorganization Approval Letter", false);        
 end
 
 rule "Classification / Rule HiringMethod = Title 5, SubmissionReason = Realignment, RequestType = Recruitment with Classification, and EmployeeType = "
@@ -1984,7 +1984,7 @@ rule "Classification / Rule HiringMethod = Title 5, SubmissionReason = Realignme
     then
         System.out.println("RULE C32>> " + $docSearch);
         addDocument($workflowDocuments, "Realignment Spreadsheet", true);
-        addDocument($workflowDocuments, "Reorganization Aproval Letter", false);        
+        addDocument($workflowDocuments, "Reorganization Approval Letter", false);        
 end
 
 rule "Classification / Rule HiringMethod = Title 5, SubmissionReason = Realignment, RequestType = Appointment with Classification, and EmployeeType = "
@@ -2029,7 +2029,7 @@ rule "Classification / Rule HiringMethod = Title 5, SubmissionReason = Realignme
     then
         System.out.println("RULE C33>> " + $docSearch);
         addDocument($workflowDocuments, "Realignment Spreadsheet", true);
-        addDocument($workflowDocuments, "Reorganization Aproval Letter", false);        
+        addDocument($workflowDocuments, "Reorganization Approval Letter", false);        
 end
 
 rule "Classification / Rule HiringMethod = Title 5, SubmissionReason = Repurposed, RequestType = Classification Only, and EmployeeType = "
@@ -3384,6 +3384,1048 @@ rule "CDC - Appointment - Resume is a Document Type"
     then
         System.out.println("RULE A1>> " + $docSearch);
         addDocument($workflowDocuments, "Resume", true);
+end
+
+rule "Named Action / Rule HiringMethod = Title 5, Par Action Type = Promotion, Par Action = PRO"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Promotion"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "PRO"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA1>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+end
+
+rule "Named Action / Rule HiringMethod = Title 5, Par Action Type = Promotion NTE, Par Action = PRO"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Promotion NTE"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "PRO"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA2>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+        addDocument($workflowDocuments, "OF-8", true);    
+        addDocument($workflowDocuments, "Position Description", true);
+end
+
+rule "Named Action / Rule HiringMethod = Title 5, Par Action Type = Reassignment, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Reassignment"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA3>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+        addDocument($workflowDocuments, "OF-8", true);    
+        addDocument($workflowDocuments, "Position Description", true);
+end
+
+rule "Named Action / Rule HiringMethod = Title 5, Par Action Type = Change to Lower Grade, Par Action = DEM"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Change to Lower Grade"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "DEM"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA4>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+end
+
+rule "Named Action / Rule HiringMethod = Title 5, Par Action Type = Extension, Par Action = EXT"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Extension"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "EXT"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA5>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+end
+
+rule "Named Action / Rule HiringMethod = Title 42, Par Action Type = Conversion, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Conversion"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA6>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);        
+        addDocument($workflowDocuments, "HRO 100", true);
+        addDocument($workflowDocuments, "PAR/JR screenshot", true);                
+        addDocument($workflowDocuments, "Current CV", true);        
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "Current Work Authorization if non-U.S. citizen", true);  
+end
+
+rule "Named Action / Rule HiringMethod = Title 42, Par Action Type = Conversion NTE, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Conversion NTE"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA7>> " + $docSearch);
+        addDocument($workflowDocuments, "CDC Form 1475 with attachment", true);
+        addDocument($workflowDocuments, "HRO 100", true);        
+        addDocument($workflowDocuments, "PAR screenshot", true);    
+        addDocument($workflowDocuments, "Justification Memorandum", true);
+end
+
+rule "Named Action / Rule HiringMethod = Title 42, Par Action Type = Stipend Increase, Par Action = PAY"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Stipend Increase"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "PAY"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA8>> " + $docSearch);
+        addDocument($workflowDocuments, "CDC Form 1475 with attachment", true);
+        addDocument($workflowDocuments, "HRO 100", true);        
+        addDocument($workflowDocuments, "PAR screenshot", true);    
+        addDocument($workflowDocuments, "Justification Memorandum", true);
+end
+
+rule "Named Action / Rule HiringMethod = Title 42, Par Action Type = Extension, Par Action = EXT"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Extension"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "EXT"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA9>> " + $docSearch);
+        addDocument($workflowDocuments, "CDC Form 1475 with attachment", true);
+        addDocument($workflowDocuments, "HRO 100", true);        
+        addDocument($workflowDocuments, "PAR screenshot", true);    
+end
+
+rule "Named Action / Rule HiringMethod = SES/SL/ST, Par Action Type = Reassignment, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Reassignment"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA10>> " + $docSearch);
+        addDocument($workflowDocuments, "Pre-Recruitment Consultation Worksheet", true);
+        addDocument($workflowDocuments, "PAR/JR", true);        
+        addDocument($workflowDocuments, "OF-8", true);    
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Resume", true);          
+        addDocument($workflowDocuments, "HHS ESRD Coversheet", true);  
+        addDocument($workflowDocuments, "HHS 820", true);
+        addDocument($workflowDocuments, "HHS 821", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Named Action / Rule HiringMethod = SES/SL/ST, Par Action Type = Conversion, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Conversion"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA11>> " + $docSearch);
+        addDocument($workflowDocuments, "Pre-Recruitment Consultation Worksheet", true);
+        addDocument($workflowDocuments, "PAR/JR", true);        
+        addDocument($workflowDocuments, "OF-8", true);    
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Resume", true);          
+        addDocument($workflowDocuments, "HHS ESRD Coversheet", true);  
+        addDocument($workflowDocuments, "HHS 820", true);
+        addDocument($workflowDocuments, "HHS 821", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Named Action / Rule HiringMethod = SES/SL/ST, Par Action Type = Extension, Par Action = EXT"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Named Action",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Extension"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "EXT"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE NA12>> " + $docSearch);
+        addDocument($workflowDocuments, "Pre-Recruitment Consultation Worksheet", true);
+        addDocument($workflowDocuments, "PAR/JR", true);        
+        addDocument($workflowDocuments, "OF-8", true);    
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Resume", true);          
+        addDocument($workflowDocuments, "HHS ESRD Coversheet", true);  
+        addDocument($workflowDocuments, "HHS 820", true);
+        addDocument($workflowDocuments, "HHS 821", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+end
+
+rule "Triage / Rule HiringMethod = Title 5, Par Action Type = Promotion, Par Action = PRO"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Promotion"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "PRO"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T1>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+        addDocument($workflowDocuments, "Pre-Established OF-8", false);
+        addDocument($workflowDocuments, "Position Description", false);
+end
+
+rule "Triage / Rule HiringMethod = Title 5, Par Action Type = Promotion NTE, Par Action = PRO"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Promotion NTE"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "PRO"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T2>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Resume", false);
+        addDocument($workflowDocuments, "Transcript", false);        
+end
+
+rule "Triage / Rule HiringMethod = Title 5, Par Action Type = Reassignment, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Reassignment"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T3>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+        addDocument($workflowDocuments, "OF-8", true);
+        addDocument($workflowDocuments, "Position Description", true);
+        addDocument($workflowDocuments, "Resume", false);
+        addDocument($workflowDocuments, "Transcript", false);        
+end
+
+rule "Triage / Rule HiringMethod = Title 5, Par Action Type = Change to Lower Grade, Par Action = DEM"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Change to Lower Grade"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "DEM"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T4>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+end
+
+rule "Triage / Rule HiringMethod = Title 5, Par Action Type = Extension, Par Action = EXT"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 5"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Extension"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "EXT"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T5>> " + $docSearch);
+        addDocument($workflowDocuments, "Checklist", true);
+        addDocument($workflowDocuments, "Memo from Program or Employee", false);
+        addDocument($workflowDocuments, "Extended Military Orders", false);
+        addDocument($workflowDocuments, "New NTE Date", false);
+        addDocument($workflowDocuments, "Actual Hours Worked and Projected Hours for Commit", false);
+end
+
+rule "Triage / Rule HiringMethod = Title 42, Par Action Type = Conversion, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :  ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Conversion"
+                            ) from $fields
+                        )
+                        
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T6>> " + $docSearch);
+        addDocument($workflowDocuments, "Statement of Duties", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);        
+        addDocument($workflowDocuments, "HRO 100", true);
+        addDocument($workflowDocuments, "PAR/JR screenshot", true);        
+        addDocument($workflowDocuments, "Current CV", true);        
+        addDocument($workflowDocuments, "Current Work Authorization if non-U.S. citizen", true);  
+end
+
+rule "Triage / Rule HiringMethod = Title 42, Par Action Type = Conversion NTE, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :  ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Conversion NTE"
+                            ) from $fields
+                        )
+                        
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T7>> " + $docSearch);
+        addDocument($workflowDocuments, "CDC Form 1475 with attachment", true);
+        addDocument($workflowDocuments, "HRO 100", true);
+        addDocument($workflowDocuments, "PAR screenshot", true);
+        addDocument($workflowDocuments, "Justification Memorandum", true);
+end
+
+rule "Triage / Rule HiringMethod = Title 42, Par Action Type = Reassignment, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Reassignment"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T8>> " + $docSearch);
+        addDocument($workflowDocuments, "CDC Form 1475 with attachment", true);
+        addDocument($workflowDocuments, "HRO 100", true);
+        addDocument($workflowDocuments, "PAR screenshot", true);
+        addDocument($workflowDocuments, "Current CV", true);
+        addDocument($workflowDocuments, "Supervisor Memorandum", true);
+        addDocument($workflowDocuments, "Position Sensitivity Level Designation Form", true);
+        addDocument($workflowDocuments, "Current Work Authorization if non-U.S. citizen", true);
+        addDocument($workflowDocuments, "Transcripts", false);        
+end
+
+rule "Triage / Rule HiringMethod = Title 42, Par Action Type = Stipend Increase, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :  ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Stipend Increase"
+                            ) from $fields
+                        )
+                        
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T9>> " + $docSearch);
+        addDocument($workflowDocuments, "CDC Form 1475 with attachment", true);
+        addDocument($workflowDocuments, "HRO 100", true);
+        addDocument($workflowDocuments, "PAR screenshot", true);
+        addDocument($workflowDocuments, "Current CV", true);
+        addDocument($workflowDocuments, "Supervisor Memorandum", true);
+        addDocument($workflowDocuments, "Position Sensitivity Level Designation Form", true);
+        addDocument($workflowDocuments, "Current Work Authorization if non-U.S. citizen", true);
+        addDocument($workflowDocuments, "Transcripts", false);        
+end
+
+rule "Triage / Rule HiringMethod = Title 42, Par Action Type = Stipend Increase, Par Action = PAY"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Stipend Increase"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "PAY"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T10>> " + $docSearch);
+        addDocument($workflowDocuments, "CDC Form 1475 with attachment", true);
+        addDocument($workflowDocuments, "HRO 100", true);
+        addDocument($workflowDocuments, "PAR screenshot", true);    
+        addDocument($workflowDocuments, "Justification Memorandum", true);
+end
+
+rule "Triage / Rule HiringMethod = Title 42, Par Action Type = Extension, Par Action = EXT"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "Title 42"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Extension"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "EXT"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T11>> " + $docSearch);
+        addDocument($workflowDocuments, "CDC Form 1475 with attachment", true);
+        addDocument($workflowDocuments, "HRO 100", true);
+        addDocument($workflowDocuments, "PAR screenshot", true);    
+end
+
+rule "Triage / Rule HiringMethod = SES/SL/ST, Par Action Type = Reassignment, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :  ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Reassignment"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T12>> " + $docSearch);
+        addDocument($workflowDocuments, "Proposed PD", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", true);    
+        addDocument($workflowDocuments, "Pre-Recruitment Consultation Worksheet", true);
+        addDocument($workflowDocuments, "Resume", true);        
+        addDocument($workflowDocuments, "PAR/JR", true);
+        addDocument($workflowDocuments, "HHS ESRD Coversheet", true);
+        addDocument($workflowDocuments, "HHS 820", true);
+        addDocument($workflowDocuments, "HHS 821", true);
+end
+
+rule "Triage / Rule HiringMethod = SES/SL/ST, Par Action Type = Conversion, Par Action = XFR"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Conversion"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "XFR"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T13>> " + $docSearch);
+        addDocument($workflowDocuments, "Proposed PD", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", true);    
+        addDocument($workflowDocuments, "Pre-Recruitment Consultation Worksheet", true);
+        addDocument($workflowDocuments, "Resume", true);        
+        addDocument($workflowDocuments, "PAR/JR", true);
+        addDocument($workflowDocuments, "HHS ESRD Coversheet", true);
+        addDocument($workflowDocuments, "HHS 820", true);
+        addDocument($workflowDocuments, "HHS 821", true);
+end
+
+rule "Triage / Rule HiringMethod = SES/SL/ST, Par Action Type = Extension, Par Action = EXT"
+    when
+        $docSearch  :   WorkflowRuleSearch
+                        (
+                            procName == "Triage",
+                            $actName : actName, $fields : fields
+                        )
+
+        $fieldHM    :   ( WorkflowField
+                            (
+                                fieldId == "HiringMethod",
+                                fieldValue == "SES/SL/ST"
+                            ) from $fields
+                        )
+
+        $fieldPAT    :   ( WorkflowField
+                            (
+                                fieldId == "PARActionType",
+                                fieldValue == "Extension"
+                            ) from $fields
+                        )
+
+        $fieldPA    :   ( WorkflowField
+                            (
+                                fieldId == "PARAction",
+                                fieldValue == "EXT"
+                            ) from $fields
+                        )
+
+        $workflowDocuments : ArrayList()
+        
+    then
+        System.out.println("RULE T14>> " + $docSearch);
+        addDocument($workflowDocuments, "Proposed PD", true);
+        addDocument($workflowDocuments, "Organizational Chart", true);
+        addDocument($workflowDocuments, "OF-8", true);    
+        addDocument($workflowDocuments, "Pre-Recruitment Consultation Worksheet", true);
+        addDocument($workflowDocuments, "Resume", true);        
+        addDocument($workflowDocuments, "PAR/JR", true);
+        addDocument($workflowDocuments, "HHS ESRD Coversheet", true);
+        addDocument($workflowDocuments, "HHS 820", true);
+        addDocument($workflowDocuments, "HHS 821", true);
 end
 
 //------------------------------
