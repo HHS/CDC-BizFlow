@@ -3,8 +3,7 @@
 SELECT  distinct REQ.HRS_JOB_OPENING_ID as JOB_OPENING_ID
        ,REQ.ADMIN_CODE as ADMIN_CODE
        ,AC.ADMIN_CODE_DESC as ORG_NAME
-       ,REQ.CAN as CAN
-       ,REQ.GVT_SEL_OFFICIAL as SELECTING_OFFICIAL_ID
+       ,REQ.CAN as CAN    ,REQ.GVT_SEL_OFFICIAL as SELECTING_OFFICIAL_ID
        ,DECODE(M_SO.MEMBERID, NULL, NULL, '[U]' || M_SO.MEMBERID) AS SELECTING_OFFICIAL_MID
        ,M_SO.NAME AS SELECTING_OFFICIAL_NAME
        ,M_SO.EMAIL AS SELECTING_OFFICIAL_EMAIL
@@ -17,16 +16,13 @@ SELECT  distinct REQ.HRS_JOB_OPENING_ID as JOB_OPENING_ID
        ,M_CA.NAME AS CIO_ADMIN_NAME
        ,M_CA.EMAIL AS CIO_ADMIN_EMAIL
        ,dbms_lob.substr( REQ.HE_COMMENTS, 4000, 1 )  AS REMARKS
-       ,REQ.STATUS_DT AS STATUS_DT 
+       ,REQ.STATUS_DT AS STATUS_DT
        ,REQ.CREATE_DATE AS CREATIONDTIME
   FROM HHS_HR.VW_EHRP_15_MIN REQ
         LEFT OUTER JOIN HHS_HR.PS_OPR_DEFN P_SO ON P_SO.OPRID = REQ.GVT_SEL_OFFICIAL
         LEFT OUTER JOIN HHS_HR.PS_OPR_DEFN P_SS ON P_SS.OPRID = REQ.GVT_STAFF_SPCLST
         LEFT OUTER JOIN HHS_HR.PS_OPR_DEFN P_CA ON P_CA.OPRID = REQ.ORIGINATOR_ID
         LEFT OUTER JOIN BIZFLOW.MEMBER M_SO ON lower(M_SO.EMAIL) = lower(P_SO.EMAILID)
---        LEFT OUTER JOIN BIZFLOW.USRGRPPRTCP M_SO_UGP ON M_SO_UGP.PRTCP = M_SO.MEMBERID
---        LEFT OUTER JOIN BIZFLOW.MEMBER M_SO_UG ON M_SO_UG.MEMBERID = M_SO_UGP.USRGRPID
---        LEFT OUTER JOIN BIZFLOW.MEMBER M_SO_UH ON M_SO_UH.MEMBERID = M_SO_UG.DEPTID AND M_SO_UH.NAME = 'CDC' AND M_SO_UH.TYPE = 'H'
         LEFT OUTER JOIN BIZFLOW.MEMBER M_SS ON lower(M_SS.EMAIL) = lower(P_SS.EMAILID)
         LEFT OUTER JOIN BIZFLOW.MEMBER M_CA ON lower(M_CA.EMAIL) = lower(P_CA.EMAILID)
         LEFT OUTER JOIN HHS_HR.ADMINISTRATIVE_CODE AC ON AC.ADMIN_CODE = REQ.ADMIN_CODE
@@ -41,19 +37,17 @@ SELECT  distinct REQ.HRS_JOB_OPENING_ID as JOB_OPENING_ID
                                       FROM HHS_CDC_HR.ERA_LOG_CAPHR_LAST_RUN 
                                      WHERE ERA_SVC_TYPE = 'CAPHR-ERA-JR'
                                      UNION
-                                    SELECT (SYSDATE - 21)
-                                      FROM DUAL 
+                                    SELECT (SYSDATE - 7)                                      FROM DUAL 
                                    ) TMP                            
                              WHERE ROWNUM = 1
                                AND LAST_RUN_DTIME IS NOT NULL
-                           )                      
+                           )                    
  ORDER BY REQ.CREATE_DATE DESC
  
 
 --SELECT * FROM MEMBER WHERE ROWNUM < 100;
 ;
 ----------------------------------------------------
-
 INSERT INTO HHS_CDC_HR.ERA_LOG_CAPHR_JR
     (JOB_OPENING_ID
     ,PROCID
@@ -64,8 +58,24 @@ VALUES
     ('${xpath:/records/record/JOB_OPENING_ID}'
     ,1
     ,'PROCESSED'
-    ,'${xpath:/records/record/REMARKS}'
+    ,q'[${xpath:/records/record/REMARKS}]'
     ,SYSDATE)
+;
+    
+    
+INSERT INTO HHS_CDC_HR.ERA_LOG_CAPHR_JR
+    (JOB_OPENING_ID
+    ,PROCID
+    ,ERA_STATUS
+    ,DSCRPTN
+    ,CREATIONDTIME)
+VALUES
+    ('${xpath:/records/record/JOB_OPENING_ID}'
+    ,1
+    ,'ERROR'
+    ,'''
+    ,SYSDATE)
+;
 
 
 -------------------------------------------------
@@ -80,7 +90,7 @@ VALUES
     ('${xpath:/records/record/JOB_OPENING_ID}'
     ,1
     ,'ERROR'
-    ,'${xpath:/records/record/REMARKS}'
+    ,q'[${xpath:/records/record/REMARKS}]'
     ,SYSDATE)
     
 select * 
@@ -131,5 +141,9 @@ WHERE UH.NAME = 'CDC'
 ;
 
 
+
 SELECT *
-FROM HHS_CDC_HR.ERA_LOG_CAPHR_JR ERA
+ FROM HHS_CDC_HR.ERA_LOG_CAPHR_JR ERA
+where era.job_opening_id = 254578
+;
+

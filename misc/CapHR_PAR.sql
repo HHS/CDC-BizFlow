@@ -43,7 +43,7 @@ WHERE JOB.BUSINESS_UNIT = 'CDC00'
                       AND ERA.PAR_STATUS = JOB.GVT_WIP_STATUS
                       AND ERA.GVT_EFFDT = JOB.GVT_EFFDT
                       AND ERA.GVT_EFFDT_PROPOSED_DT = JOB.GVT_EFFDT_PROPOSED
-                      )  
+                      ) 
   AND JOB.EFFDT = 
 		(
 			SELECT MAX(EFFDT)
