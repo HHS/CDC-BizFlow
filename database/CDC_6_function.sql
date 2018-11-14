@@ -1,3 +1,17 @@
+------------------------------------------------------------------------------------------
+--  Name	            : 	CDC_6_function.sql
+--	Author				:	Taeho Lee <thee@bizflow.com>
+--	
+--	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
+--	Purpose				:	Creating functions in HHS_CDC_HR database schema
+--	
+--  Notes               :   Run on HHS_CDC_HR schema
+--
+-- 	WHEN		WHO			WHAT		
+-- 	-----------	--------	-------------------------------------------------------
+-- 	11/14/2018	THLEE		Created
+------------------------------------------------------------------------------------------
+
 --------------------------------------------------------
 --  DDL for Function FN_CONCAT_HR_RECORDS
 --------------------------------------------------------
@@ -51,8 +65,6 @@ begin
   return resultStr;
 
 end fn_concat_hr_records;
-
-
 
 /
 
@@ -184,7 +196,6 @@ BEGIN
 
 END FN_PARSENAME;
 
-
 /
 
 --------------------------------------------------------
@@ -234,6 +245,7 @@ BEGIN
 END FN_GET_ACT_CMPLTUSR;
 
 /
+
 --------------------------------------------------------
 --  DDL for Function FN_GET_FORM_DATA_FIELD_VALUE
 --------------------------------------------------------
@@ -291,9 +303,8 @@ WHEN OTHERS THEN
     RETURN '';
 END FN_GET_FORM_DATA_FIELD_VALUE;
 
-
-
 /
+
 --------------------------------------------------------
 --  DDL for Function FN_GET_LOOKUP_LABEL
 --------------------------------------------------------
@@ -359,9 +370,8 @@ BEGIN
 
 END FN_GET_LOOKUP_LABEL_BY_NAME;
 
-
-
 /
+
 --------------------------------------------------------
 --  DDL for Function FN_GET_XML_FIELD_VALUE
 --------------------------------------------------------
@@ -418,9 +428,8 @@ WHEN OTHERS THEN
     RETURN '';
 END FN_GET_XML_FIELD_VALUE;
 
-
-
 /
+
 --------------------------------------------------------
 --  DDL for Function FN_GET_XML_NODE_VALUE
 --------------------------------------------------------
@@ -469,9 +478,8 @@ WHEN OTHERS THEN
     RETURN '';
 END FN_GET_XML_NODE_VALUE;
 
-
-
 /
+
 --------------------------------------------------------
 --  DDL for Function FN_GET_XML_VALUE
 --------------------------------------------------------
@@ -540,8 +548,6 @@ WHEN NO_DATA_FOUND THEN
 WHEN OTHERS THEN
     RETURN '';
 END FN_GET_XML_VALUE;
-
-
 
 /
 

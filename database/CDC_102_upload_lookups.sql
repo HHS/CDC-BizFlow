@@ -1,14 +1,20 @@
---------------------------------------------------------
---  File created - Thursday-November-08-2018   
---------------------------------------------------------
---------------------------------------------------------
---  DDL for Table TBL_LOOKUP
---------------------------------------------------------
+------------------------------------------------------------------------------------------
+--  Name	            : 	CDC_102_upload_lookups.sql
+--	Author				:	Taeho Lee <thee@bizflow.com>
+--	
+--	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
+--	Purpose				:	Populating lookup records in HHS_CDC_HR.TBL_LOOKUP in HHS_CDC_HR database schema
+--	
+--  Notes               :   Run on HHS_CDC_HR schema
+--
+-- 	WHEN		WHO			WHAT		
+-- 	-----------	--------	-------------------------------------------------------
+-- 	11/14/2018	THLEE		Created
+------------------------------------------------------------------------------------------
 
-Truncate TABLE "HHS_CDC_HR"."TBL_LOOKUP";
+TRUNCATE TABLE "HHS_CDC_HR"."TBL_LOOKUP";
 
 SET DEFINE OFF;
-
 Insert into HHS_CDC_HR.TBL_LOOKUP (TBL_ID,TBL_PARENT_ID,TBL_LTYPE,TBL_NAME,TBL_LABEL,TBL_ACTIVE,TBL_DISP_ORDER,TBL_MANDATORY,TBL_REGION,TBL_CATEGORY,TBL_EFFECTIVE_DT,TBL_EXPIRATION_DT) values (1701,null,'PathwayType','Intern (NTE)','Intern (NTE)','1',1,null,null,null,null,null);
 Insert into HHS_CDC_HR.TBL_LOOKUP (TBL_ID,TBL_PARENT_ID,TBL_LTYPE,TBL_NAME,TBL_LABEL,TBL_ACTIVE,TBL_DISP_ORDER,TBL_MANDATORY,TBL_REGION,TBL_CATEGORY,TBL_EFFECTIVE_DT,TBL_EXPIRATION_DT) values (1702,null,'PathwayType','Intern (indefinite)','Intern (indefinite)','1',2,null,null,null,null,null);
 Insert into HHS_CDC_HR.TBL_LOOKUP (TBL_ID,TBL_PARENT_ID,TBL_LTYPE,TBL_NAME,TBL_LABEL,TBL_ACTIVE,TBL_DISP_ORDER,TBL_MANDATORY,TBL_REGION,TBL_CATEGORY,TBL_EFFECTIVE_DT,TBL_EXPIRATION_DT) values (1703,null,'PathwayType','Recent Graduate','Recent Graduate','1',3,null,null,null,null,null);
@@ -796,3 +802,4 @@ Insert into HHS_CDC_HR.TBL_LOOKUP (TBL_ID,TBL_PARENT_ID,TBL_LTYPE,TBL_NAME,TBL_L
 Insert into HHS_CDC_HR.TBL_LOOKUP (TBL_ID,TBL_PARENT_ID,TBL_LTYPE,TBL_NAME,TBL_LABEL,TBL_ACTIVE,TBL_DISP_ORDER,TBL_MANDATORY,TBL_REGION,TBL_CATEGORY,TBL_EFFECTIVE_DT,TBL_EXPIRATION_DT) values (11301,null,'PositionIs','2','Supervisor/Manager (Code 2)','1',2,null,null,null,null,null);
 Insert into HHS_CDC_HR.TBL_LOOKUP (TBL_ID,TBL_PARENT_ID,TBL_LTYPE,TBL_NAME,TBL_LABEL,TBL_ACTIVE,TBL_DISP_ORDER,TBL_MANDATORY,TBL_REGION,TBL_CATEGORY,TBL_EFFECTIVE_DT,TBL_EXPIRATION_DT) values (11302,null,'PositionIs','4','Supervisor-CSRA (Code 4)','1',4,null,null,null,null,null);
 commit;
+

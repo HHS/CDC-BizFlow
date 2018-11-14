@@ -1,3 +1,17 @@
+------------------------------------------------------------------------------------------
+--  Name	            : 	CDC_7_stored_procedure.sql
+--	Author				:	Taeho Lee <thee@bizflow.com>
+--	
+--	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
+--	Purpose				:	Creating stored procedures in HHS_CDC_HR database schema
+--	
+--  Notes               :   Run on HHS_CDC_HR schema
+--
+-- 	WHEN		WHO			WHAT		
+-- 	-----------	--------	-------------------------------------------------------
+-- 	11/14/2018	THLEE		Created
+------------------------------------------------------------------------------------------
+
 --------------------------------------------------------
 --  DDL for Procedure SP_CLEAN_FORM_RECORDS
 --------------------------------------------------------
@@ -27,97 +41,100 @@ As
 BEGIN
     DBMS_OUTPUT.PUT_LINE('I_PROCID=' || I_PROCID); 
 
-    DELETE FROM APP_APPROVAL
+    DELETE FROM HHS_CDC_HR.APP_APPROVAL
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM APP_TRACKING
+    DELETE FROM HHS_CDC_HR.APP_TRACKING
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM ATC_BENEFITS
+    DELETE FROM HHS_CDC_HR.ATC_BENEFITS
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM ATC_COMPENSATION
+    DELETE FROM HHS_CDC_HR.ATC_COMPENSATION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM ATC_NATURE_OF_ACTION
+    DELETE FROM HHS_CDC_HR.ATC_NATURE_OF_ACTION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM ATC_PERSONNEL_ACTION
+    DELETE FROM HHS_CDC_HR.ATC_PERSONNEL_ACTION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM ATC_POSITION_INFO
+    DELETE FROM HHS_CDC_HR.ATC_POSITION_INFO
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM ATC_SELECTED_BENEFITS
+    DELETE FROM HHS_CDC_HR.ATC_SELECTED_BENEFITS
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM ATC_VALIDATION
+    DELETE FROM HHS_CDC_HR.ATC_VALIDATION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM AUTHORIZED_INCENTIVE
+    DELETE FROM HHS_CDC_HR.AUTHORIZED_INCENTIVE
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM CLA_CONDITION
+    DELETE FROM HHS_CDC_HR.CLA_CONDITION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM CLA_STANDARD
+    DELETE FROM HHS_CDC_HR.CLA_STANDARD
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM CLASSIFICATION
+    DELETE FROM HHS_CDC_HR.CLASSIFICATION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM CLASSIFIED_POS_TITLE
+    DELETE FROM HHS_CDC_HR.CLASSIFIED_POS_TITLE
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM CONCURRENCE
+    DELETE FROM HHS_CDC_HR.CONCURRENCE
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM CONSIDERATION_AREA
+    DELETE FROM HHS_CDC_HR.CONSIDERATION_AREA
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM DUTY_STATION
+    DELETE FROM HHS_CDC_HR.DUTY_STATION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM EMP_CONDITION
+    DELETE FROM HHS_CDC_HR.EMP_CONDITION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM FINANCIAL_STATEMENT
+    DELETE FROM HHS_CDC_HR.FINANCIAL_STATEMENT
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM GRADE
+    DELETE FROM HHS_CDC_HR.GRADE
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM GRADE_INFO
+    DELETE FROM HHS_CDC_HR.GRADE_INFO
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM LANGUAGE
+    DELETE FROM HHS_CDC_HR.LANGUAGE
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM POS_TITLE_SERIES
+    DELETE FROM HHS_CDC_HR.POS_TITLE_SERIES
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM POSITION
+    DELETE FROM HHS_CDC_HR.POSITION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM POSITION_BUILD_APPROVAL
+    DELETE FROM HHS_CDC_HR.POSITION_BUILD_APPROVAL
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM REC_SME
+    DELETE FROM HHS_CDC_HR.REC_SME
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM RECRUITMENT
+    DELETE FROM HHS_CDC_HR.RECRUITMENT
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM TSA_PROCESSING
+    DELETE FROM HHS_CDC_HR.TSA_PROCESSING
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM VALIDATION
+    DELETE FROM HHS_CDC_HR.TRIAGE
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM APPOINTMENT
+    DELETE FROM HHS_CDC_HR.VALIDATION
     WHERE CASE_ID = I_PROCID;
 
-    DELETE FROM HR_CASE
+    DELETE FROM HHS_CDC_HR.APPOINTMENT
+    WHERE CASE_ID = I_PROCID;
+
+    DELETE FROM HHS_CDC_HR.HR_CASE
     WHERE CASE_ID = I_PROCID;
 
 END SP_CLEAN_FORM_RECORDS;
@@ -156,8 +173,8 @@ BEGIN
 	COMMIT;
 END;
 
-
 /
+
 --------------------------------------------------------
 --  DDL for Procedure SP_UPDATE_APPOINTMENT_TBLS
 --------------------------------------------------------
@@ -1371,6 +1388,7 @@ BEGIN
 END SP_UPDATE_APPOINTMENT_TBLS;
 
 /
+
 --------------------------------------------------------
 --  DDL for Procedure SP_UPDATE_CLASSIFICATION_TBLS
 --------------------------------------------------------
@@ -2290,7 +2308,6 @@ BEGIN
     END IF;        
 
 END SP_UPDATE_CLASSIFICATION_TBLS;
-
 
 /
 
@@ -3506,6 +3523,7 @@ BEGIN
 
 END SP_UPDATE_NAMEDACTION_TBLS;
 
+
 /
 --------------------------------------------------------
 --  DDL for Procedure SP_UPDATE_RECRUITMENT_TBLS
@@ -4640,6 +4658,111 @@ BEGIN
 END SP_UPDATE_RECRUITMENT_TBLS;
 
 
+
+/
+--------------------------------------------------------
+--  DDL for Procedure SP_UPDATE_TRIAGE_TBLS
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHS_CDC_HR"."SP_UPDATE_TRIAGE_TBLS" 
+(
+  I_PROCID IN NUMBER 
+) 
+    ------------------------------------------------------------------------------------------
+    --  Procedure name	    : 	SP_UPDATE_TRIAGE_TBLS
+    --	Author				:	Taeho Lee <thee@bizflow.com>
+    --	Copyright			:	BizFlow Corp.	
+    --	
+    --	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
+    --	Purpose				:	Insert/Update Triage tables with XML document in TBL_FORM_DTL.FIELD_DATA
+    --	
+    --  Example
+    --  To use in SQL statements:
+    --
+    -- 	WHEN		WHO			WHAT		
+    -- 	-----------	--------	-------------------------------------------------------
+    -- 	11/13/2018	THLEE		Created
+    -- 	-----------	--------	-------------------------------------------------------
+IS
+-------- COMMON
+    V_RECCNT                            INTEGER;
+
+-------- FORM DATA
+    V_FD_ID                             NUMBER(20);
+    V_FD_PROCID	                        NUMBER(10);
+    V_FD_ACTSEQ                         NUMBER(10);
+    V_FD_WITEMSEQ                       NUMBER(10);
+    V_FD_FORM_TYPE                      VARCHAR2(50);
+    V_FD_FIELD_DATA	                    XMLTYPE;
+    V_FD_CRT_DT	                        TIMESTAMP;
+    V_FD_CRT_USR                        VARCHAR2(50);
+    V_FD_MOD_DT	                        TIMESTAMP;
+    V_FD_MOD_USR	                    VARCHAR2(50);
+-------- HR_CASE
+    V_CASE_ID                           NUMBER(10);
+    V_CASE_CREATOR_NM                   VARCHAR(100);
+    V_CASE_CREATION_DT                  TIMESTAMP;
+BEGIN
+
+    --DBMS_OUTPUT.PUT_LINE('I_PROCID=' || I_PROCID); 
+    SELECT "ID",
+           PROCID,
+           ACTSEQ,
+           WITEMSEQ,
+           FORM_TYPE,
+           FIELD_DATA,
+           CRT_DT,
+           CRT_USR,
+           MOD_DT,
+           MOD_USR
+      INTO V_FD_ID,
+           V_FD_PROCID,
+           V_FD_ACTSEQ,
+           V_FD_WITEMSEQ,
+           V_FD_FORM_TYPE,
+           V_FD_FIELD_DATA,
+           V_FD_CRT_DT,
+           V_FD_CRT_USR,
+           V_FD_MOD_DT,
+           V_FD_MOD_USR    
+      FROM HHS_CDC_HR.TBL_FORM_DTL
+     WHERE PROCID = I_PROCID;
+
+    ---------- HR_CASE TABLE
+    V_RECCNT := 0;
+    SELECT COUNT(1)
+      INTO V_RECCNT
+      FROM HHS_CDC_HR.HR_CASE
+     WHERE CASE_ID = I_PROCID;
+
+    IF V_RECCNT = 0 THEN
+        --DBMS_OUTPUT.PUT_LINE('INSERT INTO HHS_CDC_HR.HR_CASE');
+        INSERT INTO HHS_CDC_HR.HR_CASE 
+        (
+            CASE_ID
+            ,CASE_TP
+            ,CREATOR_NM
+            ,CREATION_DT
+        )
+        VALUES 
+        (
+            I_PROCID
+            ,'CLASSIFICATION'
+            ,V_FD_CRT_USR
+            ,V_FD_CRT_DT
+        );
+
+    ELSE
+        UPDATE HHS_CDC_HR.HR_CASE
+           SET CASE_TP = 'CLASSIFICATION'
+               ,MODIFIER_NM = V_FD_MOD_USR
+               ,MODIFICATION_DT = V_FD_MOD_DT
+         WHERE CASE_ID = I_PROCID;
+    END IF;
+
+END SP_UPDATE_TRIAGE_TBLS;
+
 /
 
 --------------------------------------------------------
@@ -4783,7 +4906,10 @@ BEGIN
 
 	-- Update process variable and transition xml into individual tables
 	-- for respective process definition
-	IF UPPER(V_FORM_TYPE) = 'RECRUITMENT' THEN
+	IF UPPER(V_FORM_TYPE) = 'TRIAGE' THEN
+        --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_TRIAGE_TBLS V_PROCID=' || V_PROCID);
+        HHS_CDC_HR.SP_UPDATE_TRIAGE_TBLS(V_PROCID);       
+    ELSIF UPPER(V_FORM_TYPE) = 'RECRUITMENT' THEN
         --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_RECRUITMENT_TBLS V_PROCID=' || V_PROCID);
         HHS_CDC_HR.SP_UPDATE_RECRUITMENT_TBLS(V_PROCID);    
     -- HHS_MAIN is a temporary name of Classification, it will need to be changed to Classification once the CLA_Main WebMaker's broken application map is fixed.
@@ -4911,6 +5037,8 @@ BEGIN
             IF ((UPPER(I_SRC_FORM_TYPE) = 'TRIAGE')
                OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
                OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')
+               OR ((UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT' OR UPPER(I_TGT_FORM_TYPE) = 'CLASSIFICATION') AND UPPER(I_TGT_FORM_TYPE) = 'NAMEDACTION')               
+               OR (UPPER(I_SRC_FORM_TYPE) = 'TRIAGE' AND (UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT' OR UPPER(I_TGT_FORM_TYPE) = 'CLASSIFICATION'))               
                OR (UPPER(I_SRC_FORM_TYPE) = 'RECRUITMENT' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
 
                 SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''genInitComplete'']')
@@ -4931,6 +5059,7 @@ BEGIN
 
                 -- Special handling for different name in between Classification and Recruitment.
                 IF ((UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
+                    OR (UPPER(I_SRC_FORM_TYPE) = 'TRIAGE' AND UPPER(I_TGT_FORM_TYPE) = 'CLASSIFICATION')
                     OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
                     SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="POS_ORG_TITLE"]/id/text()', 'POS_FUNCTIONAL_TITLE')                    
                       INTO V_NEW_FIELD_DATA
@@ -4991,6 +5120,7 @@ BEGIN
 
                 --INSERT Form Data to the target process
                 ----DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'INSERT FIELD_DATA TO NEW PROCESS');
+                --DBMS_OUTPUT.PUT_LINE('test 111 ' || '::::::');
                 INSERT INTO HHS_CDC_HR.TBL_FORM_DTL
                 (
                     PROCID
@@ -5028,7 +5158,7 @@ BEGIN
             --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_APPOINTMENT_TBLS V_PROCID=' || I_TGT_PROCID);
             HHS_CDC_HR.SP_UPDATE_APPOINTMENT_TBLS(I_TGT_PROCID);
         ELSIF UPPER(I_TGT_FORM_TYPE) = 'NAMEDACTION' THEN
-            --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_APPOINTMENT_TBLS V_PROCID=' || I_TGT_PROCID);
+            --DBMS_OUTPUT.PUT_LINE('SP_UPDATE_NAMEDACTION_TBLS V_PROCID=' || I_TGT_PROCID);
             HHS_CDC_HR.SP_UPDATE_NAMEDACTION_TBLS(I_TGT_PROCID);
         END IF;
 
@@ -5047,4 +5177,5 @@ EXCEPTION
         SP_ERROR_LOG();
         COMMIT;
 END;
+
 /

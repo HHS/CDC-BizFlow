@@ -1,7 +1,18 @@
---------------------------------------------------------
---  File created - Thursday-November-08-2018   
---------------------------------------------------------
-REM INSERTING into HHS_CDC_HR.EXTERNAL_LINK_LOOKUP
+------------------------------------------------------------------------------------------
+--  Name	            : 	CDC_101_upload_externallink.sql
+--	Author				:	Taeho Lee <thee@bizflow.com>
+--	
+--	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
+--	Purpose				:	Populating external links on Resources tab in HHS_CDC_HR.EXTERNAL_LINK_LOOKUP in HHS_CDC_HR database schema
+--	
+--  Notes               :   Run on HHS_CDC_HR schema
+--
+-- 	WHEN		WHO			WHAT		
+-- 	-----------	--------	-------------------------------------------------------
+-- 	11/14/2018	THLEE		Created
+------------------------------------------------------------------------------------------
+TRUNCATE TABLE HHS_CDC_HR.EXTERNAL_LINK_LOOKUP;
+
 SET DEFINE OFF;
 Insert into HHS_CDC_HR.EXTERNAL_LINK_LOOKUP (LINK_ID,LINK_GROUP,LINK_URL,LINK_DISPLAY,LINK_DESCRIPTION,LINK_ACTIVE,LINK_EFFECTIVE_DT,LINK_EXPIRATION_DT,LINK_DISP_ORDER) values (6,'TITLE5_RESOURCES_CLASSIFICATIONONLY','https://www.opm.gov/policy-data-oversight/classification-qualifications/classifying-general-schedule-positions/#url=Overview','OPM Classification Standards','The Standards provide general information used in determining the occupational series, title, grade, and pay system for positions performing white collar work in the Federal Government.','1',null,null,6);
 Insert into HHS_CDC_HR.EXTERNAL_LINK_LOOKUP (LINK_ID,LINK_GROUP,LINK_URL,LINK_DISPLAY,LINK_DESCRIPTION,LINK_ACTIVE,LINK_EFFECTIVE_DT,LINK_EXPIRATION_DT,LINK_DISP_ORDER) values (2,'COMMON_RESOURCES','http://pbms.cdc.gov','Position-Based Management System (PBMS)','PBMS provides information to CDC''s Integrated Resources Information System (IRIS) Staffing for budget planning purposes and also supports CDC''s Enterprise Hiring Plan.','1',null,null,2);

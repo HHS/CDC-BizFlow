@@ -1,61 +1,254 @@
+------------------------------------------------------------------------------------------
+--  Name	            : 	CDC_4_core_tables.sql
+--	Author				:	Taeho Lee <thee@bizflow.com>
+--	
+--	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
+--	Purpose				:	Creating core tables in HHS_CDC_HR database schema
+--	
+--  Notes               :   Run on HHS_CDC_HR schema
+--
+-- 	WHEN		WHO			WHAT		
+-- 	-----------	--------	-------------------------------------------------------
+-- 	11/14/2018	THLEE		Created
+------------------------------------------------------------------------------------------
 
+--------------------------------------------------------
+--  DDL for Table ERA_LOG_CAPHR_JR
+--------------------------------------------------------
 
-DROP TABLE ERROR_LOG;
-DROP TABLE TBL_FORM_DTL;
-DROP TABLE TBL_FORM_DTL_AUDIT;
-DROP TABLE TBL_LOOKUP;
+  CREATE TABLE "HHS_CDC_HR"."ERA_LOG_CAPHR_JR" 
+   (	"ID" NUMBER(*,0) NOT NULL, 
+	"JOB_OPENING_ID" VARCHAR2(200 BYTE), 
+	"PROCID" NUMBER(*,0), 
+	"ERA_STATUS" VARCHAR2(100 BYTE), 
+	"DSCRPTN" VARCHAR2(4000 BYTE), 
+	"CREATIONDTIME" TIMESTAMP (6)
+   );
+   
+--------------------------------------------------------
+--  DDL for Table ERA_LOG_CAPHR_LAST_RUN
+--------------------------------------------------------
 
-DROP SEQUENCE ERROR_LOG_SEQ;
-DROP SEQUENCE CDC_FORM_DATA_SEQ;
-DROP SEQUENCE TBL_FORM_DTL_AUDIT_SEQ;
+  CREATE TABLE "HHS_CDC_HR"."ERA_LOG_CAPHR_LAST_RUN" 
+   (	"ERA_SVC_TYPE" VARCHAR2(100 BYTE)  NOT NULL, 
+	"LAST_RUN_DTIME" TIMESTAMP (6)
+   );
+   
+--------------------------------------------------------
+--  DDL for Table ERA_LOG_CAPHR_PAR
+--------------------------------------------------------
 
-
---=============================================================================
--- Create TABLE and associated objects
---=============================================================================
-
-
+  CREATE TABLE "HHS_CDC_HR"."ERA_LOG_CAPHR_PAR" 
+   (	"ID" NUMBER(*,0)  NOT NULL, 
+	"EMPLID" VARCHAR2(100 BYTE), 
+	"ADMIN_CODE" VARCHAR2(100 BYTE), 
+	"PAR_ACTION" VARCHAR2(100 BYTE), 
+	"PAR_ACTION_REASON" VARCHAR2(100 BYTE), 
+	"PAR_STATUS" VARCHAR2(100 BYTE), 
+	"GVT_EFFDT" DATE, 
+	"GVT_EFFDT_PROPOSED_DT" DATE, 
+	"PROCID" NUMBER(*,0), 
+	"ERA_STATUS" VARCHAR2(100 BYTE), 
+	"DSCRPTN" VARCHAR2(4000 BYTE), 
+	"CREATIONDTIME" TIMESTAMP (6)
+   );
+   
 --------------------------------------------------------
 --  DDL for Table ERROR_LOG
 --------------------------------------------------------
 
-CREATE TABLE ERROR_LOG
-(
-	ID                  INTEGER
-	, ERROR_CD          INTEGER
-	, ERROR_MSG         VARCHAR2(4000)
-	, BACKTRACE         CLOB
-	, CALLSTACK         CLOB
-	, CRT_DT            DATE
-	, CRT_USR           VARCHAR2(50)
-);
+  CREATE TABLE "HHS_CDC_HR"."ERROR_LOG" 
+   (	"ID" NUMBER(*,0) NOT NULL, 
+	"ERROR_CD" NUMBER(*,0), 
+	"ERROR_MSG" VARCHAR2(4000 BYTE), 
+	"BACKTRACE" CLOB, 
+	"CALLSTACK" CLOB, 
+	"CRT_DT" DATE, 
+	"CRT_USR" VARCHAR2(50 BYTE)
+   );
+   
+--------------------------------------------------------
+--  DDL for Table TBL_FORM_DTL
+--------------------------------------------------------
 
-ALTER TABLE ERROR_LOG ADD CONSTRAINT ERROR_LOG_PK PRIMARY KEY (ID);
+  CREATE TABLE "HHS_CDC_HR"."TBL_FORM_DTL" 
+   (	"ID" NUMBER(20,0) NOT NULL, 
+	"PROCID" NUMBER(10,0), 
+	"ACTSEQ" NUMBER(10,0), 
+	"WITEMSEQ" NUMBER(10,0), 
+	"FORM_TYPE" VARCHAR2(50 BYTE), 
+	"FIELD_DATA" "XMLTYPE", 
+	"CRT_DT" TIMESTAMP (6), 
+	"CRT_USR" VARCHAR2(50 BYTE), 
+	"MOD_DT" TIMESTAMP (6), 
+	"MOD_USR" VARCHAR2(50 BYTE)
+   );
+   
+--------------------------------------------------------
+--  DDL for Table TBL_FORM_DTL_AUDIT
+--------------------------------------------------------
+
+  CREATE TABLE "HHS_CDC_HR"."TBL_FORM_DTL_AUDIT" 
+   (	"ID" NUMBER(20,0) NOT NULL, 
+	"AUDITID" NUMBER(20,0) NOT NULL, 
+	"PROCID" NUMBER(10,0), 
+	"ACTSEQ" NUMBER(10,0), 
+	"WITEMSEQ" NUMBER(10,0), 
+	"FORM_TYPE" VARCHAR2(50 BYTE), 
+	"FIELD_DATA" "XMLTYPE", 
+	"CRT_DT" TIMESTAMP (6), 
+	"CRT_USR" VARCHAR2(50 BYTE), 
+	"MOD_DT" TIMESTAMP (6), 
+	"MOD_USR" VARCHAR2(50 BYTE), 
+	"AUDIT_ACTION" VARCHAR2(50 BYTE), 
+	"AUDIT_TS" TIMESTAMP (6)
+   );
+   
+--------------------------------------------------------
+--  DDL for Table TBL_LOOKUP
+--------------------------------------------------------
+
+  CREATE TABLE "HHS_CDC_HR"."TBL_LOOKUP" 
+   (	"TBL_ID" NUMBER(*,0) NOT NULL, 
+	"TBL_PARENT_ID" NUMBER(*,0), 
+	"TBL_LTYPE" NVARCHAR2(50), 
+	"TBL_NAME" NVARCHAR2(100), 
+	"TBL_LABEL" NVARCHAR2(1000), 
+	"TBL_ACTIVE" CHAR(1 BYTE), 
+	"TBL_DISP_ORDER" NUMBER(*,0), 
+	"TBL_MANDATORY" NVARCHAR2(10), 
+	"TBL_REGION" NVARCHAR2(50), 
+	"TBL_CATEGORY" NVARCHAR2(50), 
+	"TBL_EFFECTIVE_DT" DATE, 
+	"TBL_EXPIRATION_DT" DATE
+   );
+   
+--------------------------------------------------------
+--  DDL for Index ERA_LOG_CAPHR_JR_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "HHS_CDC_HR"."ERA_LOG_CAPHR_JR_PK" ON "HHS_CDC_HR"."ERA_LOG_CAPHR_JR" ("ID");
+  
+--------------------------------------------------------
+--  DDL for Index ERA_LOG_CAPHR_JR_NK1
+--------------------------------------------------------
+
+  CREATE INDEX "HHS_CDC_HR"."ERA_LOG_CAPHR_JR_NK1" ON "HHS_CDC_HR"."ERA_LOG_CAPHR_JR" ("JOB_OPENING_ID");
+  
+--------------------------------------------------------
+--  DDL for Index ERA_LOG_CAPHR_JR_NK2
+--------------------------------------------------------
+
+  CREATE INDEX "HHS_CDC_HR"."ERA_LOG_CAPHR_JR_NK2" ON "HHS_CDC_HR"."ERA_LOG_CAPHR_JR" ("PROCID");
+  
+--------------------------------------------------------
+--  DDL for Index ERA_LOG_CAPHR_LAST_RUN_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "HHS_CDC_HR"."ERA_LOG_CAPHR_LAST_RUN_PK" ON "HHS_CDC_HR"."ERA_LOG_CAPHR_LAST_RUN" ("ERA_SVC_TYPE");
+  
+--------------------------------------------------------
+--  DDL for Index ERA_LOG_CAPHR_PAR_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "HHS_CDC_HR"."ERA_LOG_CAPHR_PAR_PK" ON "HHS_CDC_HR"."ERA_LOG_CAPHR_PAR" ("ID");
+  
+--------------------------------------------------------
+--  DDL for Index ERA_LOG_CAPHR_PAR_NK1
+--------------------------------------------------------
+
+  CREATE INDEX "HHS_CDC_HR"."ERA_LOG_CAPHR_PAR_NK1" ON "HHS_CDC_HR"."ERA_LOG_CAPHR_PAR" ("EMPLID", "ADMIN_CODE", "PAR_ACTION", "PAR_ACTION_REASON", "PAR_STATUS", "GVT_EFFDT", "GVT_EFFDT_PROPOSED_DT");
+  
+--------------------------------------------------------
+--  DDL for Index XPKERROR_LOG
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "HHS_CDC_HR"."XPKERROR_LOG" ON "HHS_CDC_HR"."ERROR_LOG" ("ID");
+  
+--------------------------------------------------------
+--  DDL for Index XPKTBL_FORM_DTL
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "HHS_CDC_HR"."XPKTBL_FORM_DTL" ON "HHS_CDC_HR"."TBL_FORM_DTL" ("ID");
+  
+--------------------------------------------------------
+--  DDL for Index XPKTBL_FORM_DTL_AUDIT
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "HHS_CDC_HR"."XPKTBL_FORM_DTL_AUDIT" ON "HHS_CDC_HR"."TBL_FORM_DTL_AUDIT" ("ID", "AUDITID");
+  
+--------------------------------------------------------
+--  DDL for Index XPKLOOKUP_TABLE
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "HHS_CDC_HR"."XPKLOOKUP_TABLE" ON "HHS_CDC_HR"."TBL_LOOKUP" ("TBL_ID") ;
+  
+--------------------------------------------------------
+--  DDL for stored procedure used one of triger below
+--------------------------------------------------------  
+  create or replace PROCEDURE "HHS_CDC_HR"."SP_ERROR_LOG" 
+IS
+	PRAGMA AUTONOMOUS_TRANSACTION;
+	V_CODE      PLS_INTEGER := SQLCODE;
+	V_MSG       VARCHAR2(32767) := SQLERRM;
+BEGIN
+	INSERT INTO ERROR_LOG
+	(
+		ERROR_CD
+		, ERROR_MSG
+		, BACKTRACE
+		, CALLSTACK
+		, CRT_DT
+		, CRT_USR
+	)
+	VALUES (
+		V_CODE
+		, V_MSG
+		, SYS.DBMS_UTILITY.FORMAT_ERROR_BACKTRACE
+		, SYS.DBMS_UTILITY.FORMAT_CALL_STACK
+		, SYSDATE
+		, USER
+	);
+
+	COMMIT;
+END;
+
+
+--------------------------------------------------------
+--  DDL for Trigger ERA_LOG_CAPHR_JR_BIR
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHS_CDC_HR"."ERA_LOG_CAPHR_JR_BIR" 
+BEFORE INSERT ON HHS_CDC_HR.ERA_LOG_CAPHR_JR
+FOR EACH ROW
+BEGIN
+	SELECT ERA_LOG_CAPHR_JR_SEQ.NEXTVAL
+	INTO :NEW.ID
+	FROM DUAL;
+END;
+
 /
+ALTER TRIGGER "HHS_CDC_HR"."ERA_LOG_CAPHR_JR_BIR" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger ERA_LOG_CAPHR_PAR_BIR
+--------------------------------------------------------
 
-
-
-COMMENT ON COLUMN ERROR_LOG.ID IS 'Unique primary key';
-COMMENT ON COLUMN ERROR_LOG.ERROR_CD IS 'Error code';
-COMMENT ON COLUMN ERROR_LOG.ERROR_MSG IS 'Error message';
-COMMENT ON COLUMN ERROR_LOG.BACKTRACE IS 'Error trace';
-COMMENT ON COLUMN ERROR_LOG.CALLSTACK IS 'PL/SQL call stack that leads to the error';
-COMMENT ON COLUMN ERROR_LOG.CRT_DT IS 'Creation Date';
-COMMENT ON COLUMN ERROR_LOG.CRT_USR IS 'Creation User';
-
-
-
-CREATE SEQUENCE ERROR_LOG_SEQ
-	INCREMENT BY 1
-	START WITH 1
-	NOMAXVALUE
-	NOCYCLE
-	NOCACHE;
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHS_CDC_HR"."ERA_LOG_CAPHR_PAR_BIR" 
+BEFORE INSERT ON HHS_CDC_HR.ERA_LOG_CAPHR_PAR
+FOR EACH ROW
+BEGIN
+	SELECT ERA_LOG_CAPHR_PAR_SEQ.NEXTVAL
+	INTO :NEW.ID
+	FROM DUAL;
+END;
 
 /
+ALTER TRIGGER "HHS_CDC_HR"."ERA_LOG_CAPHR_PAR_BIR" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger ERROR_LOG_BIR
+--------------------------------------------------------
 
-
-CREATE OR REPLACE TRIGGER ERROR_LOG_BIR
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHS_CDC_HR"."ERROR_LOG_BIR" 
 BEFORE INSERT ON ERROR_LOG
 FOR EACH ROW
 BEGIN
@@ -65,64 +258,12 @@ BEGIN
 END;
 
 /
-
-
-
-
-
-
-
-
-
-
+ALTER TRIGGER "HHS_CDC_HR"."ERROR_LOG_BIR" ENABLE;
 --------------------------------------------------------
---  DDL for Table TBL_FORM_DTL
+--  DDL for Trigger TBL_FORM_DTL_BIR
 --------------------------------------------------------
 
-CREATE TABLE TBL_FORM_DTL
-(
-	ID                      NUMBER(20) NOT NULL
-	, PROCID                NUMBER(10)
-	, ACTSEQ                NUMBER(10)
-	, WITEMSEQ              NUMBER(10)
-	, FORM_TYPE             VARCHAR2(50)
-	, FIELD_DATA            XMLTYPE
-	, CRT_DT                TIMESTAMP
-	, CRT_USR               VARCHAR2(50)
-	, MOD_DT                TIMESTAMP
-	, MOD_USR               VARCHAR2(50)
-);
-
-ALTER TABLE TBL_FORM_DTL ADD CONSTRAINT TBL_FORM_DTL_PK PRIMARY KEY (ID);
-
-DROP INDEX TBL_FORM_DTL_NK1
-;
-CREATE INDEX TBL_FORM_DTL_NK1 ON TBL_FORM_DTL (PROCID)
-;
-
-
-COMMENT ON COLUMN TBL_FORM_DTL.ID IS 'Unique primary key';
-COMMENT ON COLUMN TBL_FORM_DTL.PROCID IS 'Foreign key. Process ID of the related BIZFLOW.PROCS table';
-COMMENT ON COLUMN TBL_FORM_DTL.ACTSEQ IS 'Foreign key. Activity Sequence of the related BIZFLOW.ACT table';
-COMMENT ON COLUMN TBL_FORM_DTL.WITEMSEQ IS 'Foreign key. Work Item Sequence of the related BIZFLOW.WITEM table';
-COMMENT ON COLUMN TBL_FORM_DTL.FORM_TYPE IS 'Form Type.  Indicates what form data is stored in the record';
-COMMENT ON COLUMN TBL_FORM_DTL.FIELD_DATA IS 'XML representation of the form data';
-COMMENT ON COLUMN TBL_FORM_DTL.CRT_DT IS 'Creation Date';
-COMMENT ON COLUMN TBL_FORM_DTL.CRT_USR IS 'Creation User';
-COMMENT ON COLUMN TBL_FORM_DTL.MOD_DT IS 'Modification Date';
-COMMENT ON COLUMN TBL_FORM_DTL.MOD_USR IS 'Modification User';
-
-
-CREATE SEQUENCE CDC_FORM_DATA_SEQ
-	INCREMENT BY 1
-	START WITH 1
-	NOMAXVALUE
-	NOCYCLE
-	NOCACHE;
-
-/
-
-CREATE OR REPLACE TRIGGER TBL_FORM_DTL_BIR
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHS_CDC_HR"."TBL_FORM_DTL_BIR" 
 BEFORE INSERT ON TBL_FORM_DTL
 FOR EACH ROW
 BEGIN
@@ -134,88 +275,12 @@ END
 ;
 
 /
+ALTER TRIGGER "HHS_CDC_HR"."TBL_FORM_DTL_BIR" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger TBL_FORM_DTL_AIUDR
+--------------------------------------------------------
 
-
-
-
-
----------------------------------------------------
--- Auditing utility for form data xml table
----------------------------------------------------
-
--- DROP TABLE TBL_FORM_DTL_AUDIT;
--- DROP SEQUENCE TBL_FORM_DTL_AUDIT_SEQ;
-
-
-CREATE TABLE TBL_FORM_DTL_AUDIT
-(
-	AUDITID                 NUMBER(20)
-
-	, ID                    NUMBER(20)
-	, PROCID                NUMBER(10)
-	, ACTSEQ                NUMBER(10)
-	, WITEMSEQ              NUMBER(10)
-	, FORM_TYPE             VARCHAR2(50)
-	, FIELD_DATA            XMLTYPE
-	, CRT_DT                TIMESTAMP
-	, CRT_USR               VARCHAR2(50)
-	, MOD_DT                TIMESTAMP
-	, MOD_USR               VARCHAR2(50)
-
-	, AUDIT_ACTION          VARCHAR2(50)
-	, AUDIT_TS				TIMESTAMP
-);
-
-ALTER TABLE TBL_FORM_DTL_AUDIT ADD CONSTRAINT TBL_FORM_DTL_AUDIT_PK PRIMARY KEY (AUDITID);
-
--- optional index for search performance
---DROP INDEX TBL_FORM_DTL_AUDIT_NK1;
-CREATE INDEX TBL_FORM_DTL_AUDIT_NK1 ON TBL_FORM_DTL_AUDIT (ID);
-
--- optional index for search performance
---DROP INDEX TBL_FORM_DTL_AUDIT_NK2;
-CREATE INDEX TBL_FORM_DTL_AUDIT_NK2 ON TBL_FORM_DTL_AUDIT (PROCID);
-
-
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.AUDITID IS 'Unique primary key.';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.ID IS 'Unique primary key of TBL_FORM_DTL table record being audited.';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.PROCID IS 'Foreign key of TBL_FORM_DTL table record being audited. Process ID of the related BIZFLOW.PROCS table.';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.ACTSEQ IS 'Foreign key of TBL_FORM_DTL table record being audited. Activity Sequence of the related BIZFLOW.ACT table.';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.WITEMSEQ IS 'Foreign key of TBL_FORM_DTL table record being audited. Work Item Sequence of the related BIZFLOW.WITEM table.';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.FORM_TYPE IS 'Form Type of TBL_FORM_DTL table record being audited.  Indicates what form data is stored in the record.';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.FIELD_DATA IS 'XML representation of the form data of TBL_FORM_DTL table record being audited.';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.CRT_DT IS 'Creation Date of TBL_FORM_DTL table record being audited';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.CRT_USR IS 'Creation User of TBL_FORM_DTL table record being audited';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.MOD_DT IS 'Modification Date of TBL_FORM_DTL table record being audited';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.MOD_USR IS 'Modification User of TBL_FORM_DTL table record being audited';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.AUDIT_ACTION IS 'Audit action.  Expected values are INSERTING, UPDATING, or DELETING.';
-COMMENT ON COLUMN TBL_FORM_DTL_AUDIT.AUDIT_TS IS 'Audit timestamp';
-
-
-CREATE SEQUENCE TBL_FORM_DTL_AUDIT_SEQ
-	INCREMENT BY 1
-	START WITH 1
-	NOMAXVALUE
-	NOCYCLE
-	NOCACHE;
-/
-
-
-CREATE OR REPLACE TRIGGER TBL_FORM_DTL_AUDIT_BIR
-BEFORE INSERT ON TBL_FORM_DTL_AUDIT
-FOR EACH ROW
-BEGIN
-	SELECT TBL_FORM_DTL_AUDIT_SEQ.NEXTVAL
-	INTO :NEW.AUDITID
-	FROM DUAL;
-END;
-
-/
-
-
-
--- Trigger on source table to record onto target audit table
-CREATE OR REPLACE TRIGGER TBL_FORM_DTL_AIUDR
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHS_CDC_HR"."TBL_FORM_DTL_AIUDR" 
 AFTER INSERT OR UPDATE OR DELETE ON TBL_FORM_DTL
 FOR EACH ROW
 DECLARE
@@ -328,130 +393,62 @@ EXCEPTION
 END;
 
 /
-
-
-
-
-
+ALTER TRIGGER "HHS_CDC_HR"."TBL_FORM_DTL_AIUDR" ENABLE;
 --------------------------------------------------------
---  DDL for Table TBL_LOOKUP
+--  DDL for Trigger TBL_FORM_DTL_AUDIT_BIR
 --------------------------------------------------------
 
-CREATE TABLE TBL_LOOKUP
-(
-	TBL_ID NUMBER(*,0)
-	, TBL_PARENT_ID NUMBER(*,0)
-	, TBL_LTYPE NVARCHAR2(50)
-	, TBL_NAME NVARCHAR2(100)
-	, TBL_LABEL NVARCHAR2(1000)
-	, TBL_ACTIVE CHAR(1)
-	, TBL_DISP_ORDER NUMBER(*,0)
-	, TBL_MANDATORY NVARCHAR2(10)
-	, TBL_REGION NVARCHAR2(50)
-	, TBL_CATEGORY NVARCHAR2(50)
-	, TBL_EFFECTIVE_DT DATE
-	, TBL_EXPIRATION_DT DATE
-);
-/
-ALTER TABLE TBL_LOOKUP ADD CONSTRAINT TBL_LOOKUP_PK PRIMARY KEY (TBL_ID);
-/
---DROP INDEX TBL_LOOKUP_NK1;
-CREATE INDEX TBL_LOOKUP_NK1 ON TBL_LOOKUP (TBL_LTYPE)
-;
-/
-COMMENT ON COLUMN TBL_LOOKUP.TBL_ID IS 'Unique primary key';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_PARENT_ID IS 'Key value of associated parent data';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_LTYPE IS 'List identity';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_NAME IS 'Name of unique value within the list';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_LABEL IS 'Actual value displayed for this name';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_ACTIVE IS 'Is this code active? 0=false, 1=true';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_DISP_ORDER IS 'The order number in which the label should appear within the list';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_MANDATORY IS 'Mandatory indicator (not used)';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_REGION IS 'Region to identify organization sub-division (future use)';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_CATEGORY IS 'Category indicator - alternate grouping (not used)';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_EFFECTIVE_DT IS 'Date this code is in effect';
-COMMENT ON COLUMN TBL_LOOKUP.TBL_EXPIRATION_DT IS 'Date this code becomes obsolete';
-/
-
-
---------------------------------------------------------
---  DDL for Table UG_MAPPING
---------------------------------------------------------
-
-CREATE TABLE UG_MAPPING
-(
-	KEY NVARCHAR2(100)
-	, NAME NVARCHAR2(100)
-	, PARENT_MEM_ID VARCHAR2(10)
-);
-
-ALTER TABLE UG_MAPPING ADD CONSTRAINT UG_MAPPING_PK PRIMARY KEY (KEY);
-
-COMMENT ON COLUMN UG_MAPPING.KEY IS 'Unique primary key';
-COMMENT ON COLUMN UG_MAPPING.NAME IS 'The name of current user group';
-COMMENT ON COLUMN UG_MAPPING.PARENT_MEM_ID IS 'Parent member ID';
-
-/
-
-
-CREATE TABLE CAPHR_INTERFACE_LOG
-(
-    ID                  INTEGER NOT NULL
-    ,ACTION_TYPE        VARCHAR2(100)
-    ,JR_NO              VARCHAR2(200)
-    ,EMP_ID             VARCHAR2(200)
-    ,PAR_ACTION         VARCHAR2(200)
-    ,PAR_ACTION_TYPE    VARCHAR2(200)
-    ,PROCID             INTEGER
-    ,DSCRPTN            VARCHAR2(4000)
-    ,CREATIONDTIME      TIMESTAMP
-);
-
-ALTER TABLE CAPHR_INTERFACE_LOG ADD CONSTRAINT CAPHR_INTERFACE_LOG_PK PRIMARY KEY (ID);
-/
-
-CREATE INDEX CAPHR_INTERFACE_LOG_NK1 ON CAPHR_INTERFACE_LOG (ID, ACTION_TYPE);
-/
-
-CREATE INDEX CAPHR_INTERFACE_LOG_NK2 ON CAPHR_INTERFACE_LOG (JR_NO);
-/
-
-CREATE INDEX CAPHR_INTERFACE_LOG_NK3 ON CAPHR_INTERFACE_LOG (EMP_ID, NAMED_ACTION, PAR_STATUS);
-/
-
-CREATE SEQUENCE CAPHR_INTERFACE_LOG_SEQ
-	INCREMENT BY 1
-	START WITH 1
-	NOMAXVALUE
-	NOCYCLE
-	NOCACHE;
-
-/
-
-CREATE OR REPLACE TRIGGER CAPHR_INTERFACE_LOG_BIR
-BEFORE INSERT ON CAPHR_INTERFACE_LOG
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHS_CDC_HR"."TBL_FORM_DTL_AUDIT_BIR" 
+BEFORE INSERT ON TBL_FORM_DTL_AUDIT
 FOR EACH ROW
 BEGIN
-	SELECT CAPHR_INTERFACE_LOG_SEQ.NEXTVAL
-	INTO :NEW.ID
+	SELECT TBL_FORM_DTL_AUDIT_SEQ.NEXTVAL
+	INTO :NEW.AUDITID
 	FROM DUAL;
 END;
 
 /
+ALTER TRIGGER "HHS_CDC_HR"."TBL_FORM_DTL_AUDIT_BIR" ENABLE;
 
+--------------------------------------------------------
+--  Constraints for Table ERA_LOG_CAPHR_JR
+--------------------------------------------------------
 
-CREATE TABLE ERA_LAST_RUN
-(
-    ID              INTEGER NOT NULL
-    ,ACTION_TYPE    VARCHAR2(100)
-    ,JR_NO          VARCHAR2(200)
-    ,EMP_ID         VARCHAR2(200)
-    ,NAMED_ACTION   VARCHAR2(200)
-    ,PAR_STATUS     VARCHAR2(200)
-    ,PROCID         INTEGER
-    ,DSCRPTN        VARCHAR2(4000)
-    ,CREATIONDTIME  TIMESTAMP
-);
+  ALTER TABLE "HHS_CDC_HR"."ERA_LOG_CAPHR_JR" ADD CONSTRAINT "ERA_LOG_CAPHR_JR_PK" PRIMARY KEY ("ID");
 
+--------------------------------------------------------
+--  Constraints for Table ERA_LOG_CAPHR_LAST_RUN
+--------------------------------------------------------
 
+  ALTER TABLE "HHS_CDC_HR"."ERA_LOG_CAPHR_LAST_RUN" ADD CONSTRAINT "ERA_LOG_CAPHR_LAST_RUN_PK" PRIMARY KEY ("ERA_SVC_TYPE");
+  
+--------------------------------------------------------
+--  Constraints for Table ERA_LOG_CAPHR_PAR
+--------------------------------------------------------
+
+  ALTER TABLE "HHS_CDC_HR"."ERA_LOG_CAPHR_PAR" ADD CONSTRAINT "ERA_LOG_CAPHR_PAR_PK" PRIMARY KEY ("ID");
+  
+--------------------------------------------------------
+--  Constraints for Table ERROR_LOG
+--------------------------------------------------------
+
+  ALTER TABLE "HHS_CDC_HR"."ERROR_LOG" ADD CONSTRAINT "XPKERROR_LOG" PRIMARY KEY ("ID");
+
+--------------------------------------------------------
+--  Constraints for Table TBL_FORM_DTL
+--------------------------------------------------------
+
+  ALTER TABLE "HHS_CDC_HR"."TBL_FORM_DTL" ADD CONSTRAINT "XPKTBL_FORM_DTL" PRIMARY KEY ("ID");
+  
+--------------------------------------------------------
+--  Constraints for Table TBL_FORM_DTL_AUDIT
+--------------------------------------------------------
+
+  ALTER TABLE "HHS_CDC_HR"."TBL_FORM_DTL_AUDIT" ADD CONSTRAINT "XPKTBL_FORM_DTL_AUDIT" PRIMARY KEY ("ID", "AUDITID");
+
+--------------------------------------------------------
+--  Constraints for Table TBL_LOOKUP
+--------------------------------------------------------
+
+  ALTER TABLE "HHS_CDC_HR"."TBL_LOOKUP" ADD CONSTRAINT "XPKLOOKUP_TABLE" PRIMARY KEY ("TBL_ID");
 

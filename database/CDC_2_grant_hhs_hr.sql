@@ -1,17 +1,15 @@
 ------------------------------------------------------------------------------------------
---  Name	            : 	2_grant_hhs_hr.sql
+--  Name	            : 	CDC_2_grant_hhs_hr.sql
 --	Author				:	Taeho Lee <thee@bizflow.com>
---	Copyright			:	BizFlow Corp.	
 --	
 --	Project				:	HHS CDC HR Workflow Solution - EWITS 2.0
 --	Purpose				:	Grant permission to access hhs_hr database tables. 
 --	
---  Example
---  To use in SQL statements:
+--  Notes               :   Run this query as DBA who having access permission to BIZFLOW, HHS_HR, and HHS_CDC_HR schema or Run this query on HHR_HR schema.
 --
 -- 	WHEN		WHO			WHAT		
 -- 	-----------	--------	-------------------------------------------------------
--- 	09/20/2018	THLEE		Created
+-- 	11/14/2018	THLEE		Created
 ------------------------------------------------------------------------------------------
 
 BEGIN
