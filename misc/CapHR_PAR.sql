@@ -34,7 +34,7 @@ SELECT
 WHERE JOB.BUSINESS_UNIT = 'CDC00'
   AND JOB.GVT_WIP_STATUS = 'INI'
   AND JOB.ACTION IN ('PRO','XFR','EXT','DEM','PAY','EZT')
-   AND NOT EXISTS (SELECT 1
+/*   AND NOT EXISTS (SELECT 1
                      FROM HHS_CDC_HR.ERA_LOG_CAPHR_PAR ERA
                     WHERE ERA.EMPLID = JOB.EMPLID
                       AND ERA.ADMIN_CODE = JOB.DEPTID
@@ -43,7 +43,7 @@ WHERE JOB.BUSINESS_UNIT = 'CDC00'
                       AND ERA.PAR_STATUS = JOB.GVT_WIP_STATUS
                       AND ERA.GVT_EFFDT = JOB.GVT_EFFDT
                       AND ERA.GVT_EFFDT_PROPOSED_DT = JOB.GVT_EFFDT_PROPOSED
-                      ) 
+                      ) */
   AND JOB.EFFDT = 
 		(
 			SELECT MAX(EFFDT)
@@ -58,7 +58,7 @@ WHERE JOB.BUSINESS_UNIT = 'CDC00'
                                       FROM HHS_CDC_HR.ERA_LOG_CAPHR_LAST_RUN 
                                      WHERE ERA_SVC_TYPE = 'CAPHR-ERA-PAR'
                                      UNION
-                                    SELECT (SYSDATE - 14)
+                                    SELECT (SYSDATE - 21)
                                       FROM DUAL 
                                    ) TMP                            
                              WHERE ROWNUM = 1
@@ -79,7 +79,7 @@ WHERE JOB.BUSINESS_UNIT = 'CDC00'
                                       FROM HHS_CDC_HR.ERA_LOG_CAPHR_LAST_RUN 
                                      WHERE ERA_SVC_TYPE = 'CAPHR-ERA-PAR'
                                      UNION
-                                    SELECT (SYSDATE - 14)
+                                    SELECT (SYSDATE - 21)
                                       FROM DUAL 
                                    ) TMP                            
                              WHERE ROWNUM = 1
@@ -170,12 +170,16 @@ VALUES
     ;
 
 SELECT *
-FROM HHS_CDC_HR.ERA_LOG_CAPHR_PAR
+FROM HHS_CDC_HR.ERA_LOG_CAPHR_PAR;
+
 ORDER BY EMPLID, ADMIN_CODE, PAR_ACTION, PAR_STATUS, GVT_EFFDT
 ;
+
+/*
 
 DELETE
 FROM HHS_CDC_HR.ERA_LOG_CAPHR_PAR
 ;
 COMMIT;
 /
+*/
