@@ -1,7 +1,16 @@
+----------------------------------------------------
+-- SQL Queries for "CDC - CapHR - PAR" Event Response
+-- This is not a really source code but part of sql queries to make ERA service creation easier.
+-- SQL below can be changed afterward. Only use this file when to setup CDC HR solution for the first time on Production server
+-- You can copy and pastes these queries to ERA Wizard screen.
+-- Last Updated 11/15/2018 by Taeho Lee tae.lee@hhs.gov
+----------------------------------------------------
 
+----------------------------------------------------
+-- Copy query below and paste it to "SQL SELECT query" textbox
+----------------------------------------------------
 SELECT
-        JOB.EMPLID AS EMP_ID
-        ,CASE
+        JOB.EMPLID AS EMP_ID     ,CASE
             WHEN EMP.LAST_NAME IS NOT NULL OR EMP.FIRST_NAME IS NOT NULL THEN
             EMP.LAST_NAME || ', ' || EMP.FIRST_NAME || ' ' || SUBSTR(EMP.MIDDLE_NAME, 0, 1)
         END AS EMP_NAME
@@ -34,7 +43,7 @@ SELECT
 WHERE JOB.BUSINESS_UNIT = 'CDC00'
   AND JOB.GVT_WIP_STATUS = 'INI'
   AND JOB.ACTION IN ('PRO','XFR','EXT','DEM','PAY','EZT')
-/*   AND NOT EXISTS (SELECT 1
+   AND NOT EXISTS (SELECT 1
                      FROM HHS_CDC_HR.ERA_LOG_CAPHR_PAR ERA
                     WHERE ERA.EMPLID = JOB.EMPLID
                       AND ERA.ADMIN_CODE = JOB.DEPTID
@@ -43,7 +52,7 @@ WHERE JOB.BUSINESS_UNIT = 'CDC00'
                       AND ERA.PAR_STATUS = JOB.GVT_WIP_STATUS
                       AND ERA.GVT_EFFDT = JOB.GVT_EFFDT
                       AND ERA.GVT_EFFDT_PROPOSED_DT = JOB.GVT_EFFDT_PROPOSED
-                      ) */
+                      )  
   AND JOB.EFFDT = 
 		(
 			SELECT MAX(EFFDT)
@@ -56,9 +65,9 @@ WHERE JOB.BUSINESS_UNIT = 'CDC00'
                               FROM (
                                     SELECT LAST_RUN_DTIME 
                                       FROM HHS_CDC_HR.ERA_LOG_CAPHR_LAST_RUN 
-                                     WHERE ERA_SVC_TYPE = 'CAPHR-ERA-PAR'
+									  WHERE ERA_SVC_TYPE = 'CAPHR-ERA-PAR'
                                      UNION
-                                    SELECT (SYSDATE - 21)
+                                    SELECT (SYSDATE - 7)
                                       FROM DUAL 
                                    ) TMP                            
                              WHERE ROWNUM = 1
@@ -79,7 +88,7 @@ WHERE JOB.BUSINESS_UNIT = 'CDC00'
                                       FROM HHS_CDC_HR.ERA_LOG_CAPHR_LAST_RUN 
                                      WHERE ERA_SVC_TYPE = 'CAPHR-ERA-PAR'
                                      UNION
-                                    SELECT (SYSDATE - 21)
+                                    SELECT (SYSDATE - 7)
                                       FROM DUAL 
                                    ) TMP                            
                              WHERE ROWNUM = 1
@@ -103,12 +112,13 @@ GROUP BY
         ,TRIM(JOB.GVT_LEG_AUTH_1 || ' ' || GVT_PAR_AUTH_D1 || ' ' || GVT_PAR_AUTH_D1_2)
         ,TRIM(JOB.GVT_LEG_AUTH_2 || ' ' || GVT_PAR_AUTH_D2 || ' ' || GVT_PAR_AUTH_D2_2)
         ,EMP.CAN_CD
-    ;
+		
 
 
 ----------------------------------------------------
+-- Copy query below and paste it to "SQL UPDATE/DELETE" textbox
+----------------------------------------------------
 
-    
 INSERT INTO HHS_CDC_HR.ERA_LOG_CAPHR_PAR
     (
     EMPLID
@@ -134,11 +144,14 @@ VALUES
     ,TO_DATE('${xpath:/records/record/GVT_EFFDT_PROPOSED_FORMATTED}', 'YYYY/MM/DD HH24:MI:SS')
     ,1
     ,'PROCESSED'
-    ,'${xpath:/records/record/REMARKS}'
+    ,q'[${xpath:/records/record/REMARKS}]'
     ,SYSDATE)
-;
+	
 
--------------------------------------------------
+
+----------------------------------------------------
+-- Copy query below and paste it to "SQL error recovery statement" textbox
+----------------------------------------------------
 
 INSERT INTO HHS_CDC_HR.ERA_LOG_CAPHR_PAR
     (
@@ -151,8 +164,7 @@ INSERT INTO HHS_CDC_HR.ERA_LOG_CAPHR_PAR
     ,GVT_EFFDT_PROPOSED_DT
     ,PROCID
     ,ERA_STATUS
-    ,DSCRPTN
-    ,CREATIONDTIME
+    ,DSCRPTN,CREATIONDTIME
     )
 VALUES
     (
@@ -165,21 +177,6 @@ VALUES
     ,TO_DATE('${xpath:/records/record/GVT_EFFDT_PROPOSED_FORMATTED}', 'YYYY/MM/DD HH24:MI:SS')
     ,1
     ,'ERROR'
-    ,'${xpath:/records/record/REMARKS}'
+    ,q'[${xpath:/records/record/REMARKS}]'
     ,SYSDATE)
-    ;
 
-SELECT *
-FROM HHS_CDC_HR.ERA_LOG_CAPHR_PAR;
-
-ORDER BY EMPLID, ADMIN_CODE, PAR_ACTION, PAR_STATUS, GVT_EFFDT
-;
-
-/*
-
-DELETE
-FROM HHS_CDC_HR.ERA_LOG_CAPHR_PAR
-;
-COMMIT;
-/
-*/
