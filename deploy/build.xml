@@ -205,7 +205,7 @@
 		<tstamp>
 			<format property="ziptime" pattern="yyyyMMdd_HHmmss" />
 		</tstamp>
-		<zip destfile="${deploy.runtime.dir}/../runtime_cdc_${ziptime}.zip"
+		<zip destfile="${deploy.runtime.dir}/../cdc_runtime_${ziptime}.zip"
 				basedir="${deploy.runtime.dir}/.."
 				includes="runtime/**" />
 	</target>
