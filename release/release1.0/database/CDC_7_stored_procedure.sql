@@ -4941,7 +4941,7 @@ END;
 --------------------------------------------------------
 set define off;
 
-  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHS_CDC_HR"."SP_DATACOPY_FORM_DATA" 
+create or replace PROCEDURE              "HHS_CDC_HR"."SP_DATACOPY_FORM_DATA" 
 (
 	I_SRC_PROCID      IN NUMBER
     , I_SRC_FORM_TYPE   IN VARCHAR2
@@ -4967,6 +4967,7 @@ set define off;
     -- 	05/03/2018	SGURUNG		Added code to UPDATE FIELD_DATA by replacing node value 'PRE_EMPLOYMENT_PHYSICAL_REQUIRED' with 'PRE_EMP_PHYSICAL_REQUIRED'    
     -- 	06/19/2018	SGURUNG		Added code to have the Appointment WF use PROCID from its parent WF as its Parent Process ID
     -- 	10/23/2018	SGURUNG		Added code to have the Triage Named Action processes
+    -- 	11/15/2018	SGURUNG		Set Request Type to 'Classification Only' for Named Action triggered from Classification if Title 42 or SES/SL/ST
     ------------------------------------------------------------------------------------------
 
 IS
@@ -4988,7 +4989,8 @@ IS
     V_NEW_FIELD_DATA XMLTYPE;
     V_REC_CNT number(10);
     V_P_PRCID_CNT number(10);
-
+    V_HM_ID VARCHAR2(20);
+    
 BEGIN
 
     --DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'SP_DATACOPY_FORM_DATA IS CALLED');
@@ -5017,6 +5019,14 @@ BEGIN
             V_P_PRCID_CNT := -1;
     END;
 
+    BEGIN
+        SELECT UPPER(EXTRACTVALUE(field_data, '/formData/items/item[id="HM_ID"]/value')) INTO V_HM_ID FROM TBL_FORM_DTL WHERE PROCID = I_SRC_PROCID
+          AND EXISTSNODE(field_data, '/formData/items/item[id="HM_ID"]') = 1 ;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            V_HM_ID := NULL;
+    END;
+
     IF V_FIELD_DATA IS NOT NULL THEN
 
         V_NEW_FIELD_DATA := NULL;
@@ -5036,9 +5046,11 @@ BEGIN
             --Pre-processing: add, delete, move elements from source xml before copying it to target process.
             IF ((UPPER(I_SRC_FORM_TYPE) = 'TRIAGE')
                OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
-               OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')
-               OR ((UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT' OR UPPER(I_TGT_FORM_TYPE) = 'CLASSIFICATION') AND UPPER(I_TGT_FORM_TYPE) = 'NAMEDACTION')               
-               OR (UPPER(I_SRC_FORM_TYPE) = 'TRIAGE' AND (UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT' OR UPPER(I_TGT_FORM_TYPE) = 'CLASSIFICATION'))               
+               OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'NAMEDACTION')
+               OR (UPPER(I_SRC_FORM_TYPE) = 'TRIAGE' AND UPPER(I_TGT_FORM_TYPE) = 'CLASSIFICATION')
+               OR (UPPER(I_SRC_FORM_TYPE) = 'TRIAGE' AND UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
+               OR (UPPER(I_SRC_FORM_TYPE) = 'TRIAGE' AND UPPER(I_TGT_FORM_TYPE) = 'NAMEDACTION')               
+               --OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT') this inter work flow does not exist anymore
                OR (UPPER(I_SRC_FORM_TYPE) = 'RECRUITMENT' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
 
                 SELECT DELETEXML(V_NEW_FIELD_DATA, '/formData/items/item[id=''genInitComplete'']')
@@ -5059,8 +5071,9 @@ BEGIN
 
                 -- Special handling for different name in between Classification and Recruitment.
                 IF ((UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'RECRUITMENT')
+                    OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')
                     OR (UPPER(I_SRC_FORM_TYPE) = 'TRIAGE' AND UPPER(I_TGT_FORM_TYPE) = 'CLASSIFICATION')
-                    OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'APPOINTMENT')) THEN
+                    OR (UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'NAMEDACTION')) THEN
                     SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="POS_ORG_TITLE"]/id/text()', 'POS_FUNCTIONAL_TITLE')                    
                       INTO V_NEW_FIELD_DATA
                       FROM DUAL; 
@@ -5077,6 +5090,16 @@ BEGIN
                     SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="PARENT_PROCESS_ID"]/id/text()', 'GRAND_PARENT_PROCESS_ID')                    
                       INTO V_NEW_FIELD_DATA
                       FROM DUAL;                       
+                      
+                        IF ((UPPER(I_SRC_FORM_TYPE) = 'CLASSIFICATION' AND UPPER(I_TGT_FORM_TYPE) = 'NAMEDACTION') AND (V_HM_ID = 'TITLE 42' OR V_HM_ID = 'SES/SL/ST')) THEN
+                            SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="REQUEST_TYPE"]/value/text()', 'Classification Only')
+                              INTO V_NEW_FIELD_DATA
+                              FROM DUAL;
+                            SELECT UPDATEXML(V_NEW_FIELD_DATA, '/formData/items/item[id="REQUEST_TYPE"]/text/text()', 'Classification Only')
+                              INTO V_NEW_FIELD_DATA
+                              FROM DUAL;                              
+                        END IF;                      
+                      
                 END IF;
 
             END IF;
@@ -5120,7 +5143,6 @@ BEGIN
 
                 --INSERT Form Data to the target process
                 ----DBMS_OUTPUT.PUT_LINE('[DEBUG] ' || 'INSERT FIELD_DATA TO NEW PROCESS');
-                --DBMS_OUTPUT.PUT_LINE('test 111 ' || '::::::');
                 INSERT INTO HHS_CDC_HR.TBL_FORM_DTL
                 (
                     PROCID
