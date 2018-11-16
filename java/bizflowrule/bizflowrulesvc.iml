@@ -70,5 +70,6 @@
     <orderEntry type="library" name="lib.jersey" level="project" />
     <orderEntry type="library" scope="TEST" name="lib.junit" level="project" />
     <orderEntry type="library" name="lib.common" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="lib.provided" level="project" />
   </component>
 </module>
