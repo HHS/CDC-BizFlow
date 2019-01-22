@@ -16,6 +16,8 @@
 --  DDL for Table NAMED_ACTION
 --------------------------------------------------------
 
+
+
   CREATE TABLE "HHS_CDC_HR"."NAMED_ACTION" 
    (	"CASE_ID" NUMBER(10,0), 
 	"PAR_ACTN" VARCHAR2(200 BYTE), 
@@ -24,7 +26,8 @@
 	"EMPL_ID" VARCHAR2(200 BYTE), 
 	"EMPL_NM" VARCHAR2(200 BYTE), 
 	"PRE_CNSLTTN_REQD" VARCHAR2(10 BYTE), 
-	"NA_MTNG_DT" VARCHAR2(20 BYTE)
+	"NA_MTNG_DT" VARCHAR2(20 BYTE),
+    "JOB_REQ_NO" VARCHAR2(200 BYTE) 
    );
    
 --------------------------------------------------------
