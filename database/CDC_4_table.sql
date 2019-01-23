@@ -757,16 +757,3 @@
   ALTER TABLE "HHS_CDC_HR"."VALIDATION" MODIFY ("CASE_ID" NOT NULL ENABLE);
 /
 
-
-
-
-
-  
-
-
-  
-  
-
-
-
-
