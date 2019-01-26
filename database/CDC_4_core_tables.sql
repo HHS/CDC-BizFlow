@@ -171,6 +171,8 @@
 
   CREATE UNIQUE INDEX "HHS_CDC_HR"."XPKTBL_FORM_DTL" ON "HHS_CDC_HR"."TBL_FORM_DTL" ("ID");
   
+  CREATE INDEX "HHS_CDC_HR"."TBL_FORM_DTL_NK1" ON "HHS_CDC_HR"."TBL_FORM_DTL" ("PROCID");
+  
 --------------------------------------------------------
 --  DDL for Index XPKTBL_FORM_DTL_AUDIT
 --------------------------------------------------------
