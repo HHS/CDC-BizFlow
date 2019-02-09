@@ -11,6 +11,7 @@
 -- 	-----------	--------	-------------------------------------------------------
 -- 	11/14/2018	THLEE		Created
 ------------------------------------------------------------------------------------------
+SET DEFINE OFF;
 
 --------------------------------------------------------
 --  DDL for Table ERA_LOG_CAPHR_JR
@@ -281,6 +282,7 @@ ALTER TRIGGER "HHS_CDC_HR"."TBL_FORM_DTL_BIR" ENABLE;
 --------------------------------------------------------
 --  DDL for Trigger TBL_FORM_DTL_AIUDR
 --------------------------------------------------------
+SET DEFINE OFF;
 
   CREATE OR REPLACE EDITIONABLE TRIGGER "HHS_CDC_HR"."TBL_FORM_DTL_AIUDR" 
 AFTER INSERT OR UPDATE OR DELETE ON TBL_FORM_DTL
